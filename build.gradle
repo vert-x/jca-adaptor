@@ -1,0 +1,149 @@
+apply from: "gradle/vertx.gradle"
+apply plugin: 'java'
+
+defaultTasks 'rar'
+
+group = 'org.vertx.java.resourceadapter'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+version = '0.0.1'
+
+configurations {
+   compile {
+      transitive = true
+   }
+}
+
+sourceSets {
+  main {
+    compileClasspath = compileClasspath + configurations.provided
+  }
+}
+
+
+repositories {
+  mavenLocal()
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+  maven {url 'http://repository.jboss.org/nexus/content/groups/public/'}
+  maven {url 'http://snapshots.jboss.org/maven2/' }
+  mavenCentral()
+  maven {url 'http://jesperpedersen.github.com/fungal/maven2/'}
+}
+
+dependencies {
+  provided "javax.validation:validation-api:$validationVersion"
+  provided "org.jboss.ironjacamar:ironjacamar-spec-api:$ijVersion"
+  compile "io.vertx:vertx-core:$vertxVersion"
+  compile "io.vertx:vertx-platform:$vertxVersion"
+  runtime "io.vertx:vertx-hazelcast:$vertxVersion"
+  runtime "com.hazelcast:hazelcast:$hazelcastVersion"
+  testCompile "io.vertx:testtools:$toolsVersion"
+  testCompile "io.vertx:vertx-testsuite:$testsuiteVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded-byteman:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-common-api:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-common-impl:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-common-spi:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-core-api:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-core-impl:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-depchain:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-deployers-common:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-deployers-fungal:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-embedded:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-test-eis:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-validator:$ijVersion"
+  testCompile "junit:junit:$junitVersion"
+  testCompile files("${System.properties['java.home']}/../lib/tools.jar") 
+}
+
+javadoc {
+  source = sourceSets.main.allJava
+  classpath = sourceSets.main.compileClasspath + configurations.provided
+}
+
+task rar( type: Zip, dependsOn: 'build', description: 'Package the resource adapter .rar file') {
+  group = 'JCA'
+  description = "Assembles a resource adapter .rar file"
+  destinationDir = project.file('build/libs')
+  archiveName = "${modname}-${version}" + ".rar"
+  from configurations.runtime
+  from "build/libs/${modname}-${version}.jar"
+  into ('META-INF') {
+     from 'src/main/resources/META-INF/ironjacamar.xml'
+  }
+}
+
+task sourceJar(type: Jar) {
+  description = 'Builds a source jar artifact suitable for maven deployment.'
+  classifier = 'sources'
+  from sourceSets.main.java
+}
+
+task javadocJar(type: Jar) {
+  description = 'Builds a javadoc jar artifact suitable for maven deployment.'
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+javadocJar.dependsOn javadoc
+
+build.dependsOn sourceJar, javadocJar
+
+artifacts {
+  archives sourceJar, javadocJar
+}
+
+jar {
+  exclude = project.file('src/main/resources/META-INF/ironjacamar.xml')
+}
+
+test {
+
+  // Make sure tests are always run!
+  outputs.upToDateWhen { false }
+
+  // Show output
+  testLogging.showStandardStreams = true
+
+  testLogging { exceptionFormat "full" }
+
+}
+
+
+/*
+If you're uploading stuff to Maven, Gradle needs to generate a POM.
+Please edit the details below.
+ */
+def configurePom(def pom) {
+  pom.project {
+    name rootProject.name
+    description 'Vertx Resource Adapter'
+    inceptionYear '2013'
+    packaging 'rar'
+
+    url 'https://github.com/gaol/vertx-resource-adapter'
+
+    developers {
+      developer {
+        id 'gaol'
+        name 'Lin Gao'
+        email 'aoingl@gmail.com'
+      }
+    }
+
+    scm {
+      url 'git@github.com:gaol/vertx-resource-adapter.git'
+    }
+
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+
+    properties {
+      setProperty('project.build.sourceEncoding', 'UTF8')
+    }
+  }
+}
