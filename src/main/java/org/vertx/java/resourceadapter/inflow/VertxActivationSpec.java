@@ -30,7 +30,6 @@ import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
 import javax.validation.constraints.NotNull;
 
-import org.vertx.java.core.Handler;
 import org.vertx.java.resourceadapter.AbstractJcaBase;
 
 /**
@@ -38,7 +37,7 @@ import org.vertx.java.resourceadapter.AbstractJcaBase;
  *
  * @version $Revision: $
  */
-@Activation(messageListeners = { Handler.class })
+@Activation(messageListeners = { VertxListener.class })
 public class VertxActivationSpec extends AbstractJcaBase implements ActivationSpec
 {
 

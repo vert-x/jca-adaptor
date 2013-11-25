@@ -21,7 +21,6 @@
  */
 package org.vertx.java.resourceadapter.inflow;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.resource.ResourceException;
@@ -53,11 +52,6 @@ public class VertxActivation
    /** The message endpoint factory */
    private MessageEndpointFactory endpointFactory;
    
-   /**
-    * The onMessage method
-    */
-   public static final Method ONMESSAGE;
-   
    private Vertx vertx;
 
    /**
@@ -70,7 +64,7 @@ public class VertxActivation
    {
       try
       {
-         ONMESSAGE = Handler.class.getMethod("handle", new Class[] { Message.class });
+         VertxListener.class.getMethod("onMessage", new Class[] { Message.class });
       }
       catch (Exception e)
       {
@@ -145,7 +139,7 @@ public class VertxActivation
       vertx.eventBus().registerHandler(address, new Handler<Message<?>>()
       {
          public void handle(Message<?> message) {
-            ((Handler<Message<?>>)endPoint).handle(message);
+            ((VertxListener)endPoint).onMessage(message);
          };
       });
    }

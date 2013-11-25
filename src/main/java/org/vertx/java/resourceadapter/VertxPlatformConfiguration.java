@@ -26,7 +26,19 @@ public class VertxPlatformConfiguration implements Serializable
    
    private String clusterConfiguratoinFile;
    
-   public String getVertxPlatformKey()
+   @Override
+   public String toString()
+   {
+      StringBuilder sb = new StringBuilder(getVertxPlatformAddress());
+      if (this.clusterConfiguratoinFile != null && this.clusterConfiguratoinFile.length() > 0)
+      {
+         sb.append(":");
+         sb.append(this.clusterConfiguratoinFile);
+      }
+      return sb.toString();
+   }
+   
+   public String getVertxPlatformAddress()
    {
       StringBuilder sb = new StringBuilder();
       sb.append(getClusterHost());

@@ -51,7 +51,7 @@ import org.vertx.java.resourceadapter.inflow.VertxActivationSpec;
    description = {"VertxResourceAdapter is the Resource Adapter used to interact with a Vert.x cluster."},
    eisType = "vertx",
    transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
-public class VertxResourceAdapter extends AbstractJcaBase implements ResourceAdapter, java.io.Serializable
+public class VertxResourceAdapter implements ResourceAdapter, java.io.Serializable
 {
 
    /**

@@ -47,7 +47,7 @@ import org.vertx.java.core.shareddata.SharedData;
  *
  * @version $Revision: $
  */
-public class VertxManagedConnection implements ManagedConnection
+public class VertxManagedConnection implements ManagedConnection, VertxHolder
 {
 
    /** The logger */
@@ -79,11 +79,18 @@ public class VertxManagedConnection implements ManagedConnection
       this.logwriter = null;
       this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
       this.vertxConn = null;
+      VertxPlatformFactory.instance().addVertxHolder(this);
    }
    
    public VertxManagedConnectionFactory getManagementConnectionFactory()
    {
       return this.mcf;
+   }
+   
+   @Override
+   public Vertx getVertx()
+   {
+      return this.vertx;
    }
 
    /**
@@ -142,6 +149,7 @@ public class VertxManagedConnection implements ManagedConnection
    public void destroy() throws ResourceException
    {
       log.finest("destroy()");
+      VertxPlatformFactory.instance().removeVertxHolder(this);
    }
 
    /**
