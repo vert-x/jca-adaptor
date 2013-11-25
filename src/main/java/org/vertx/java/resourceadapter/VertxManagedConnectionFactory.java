@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
+import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ConnectionDefinition;
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -35,6 +36,8 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
+
+import org.vertx.java.core.Vertx;
 
 /**
  * The outbound of the resource adapter.
@@ -47,7 +50,7 @@ import javax.security.auth.Subject;
    connectionFactoryImpl = VertxConnectionFactoryImpl.class,
    connection = VertxConnection.class,
    connectionImpl = VertxConnectionImpl.class)
-public class VertxManagedConnectionFactory extends AbstractJcaBase  implements ManagedConnectionFactory, ResourceAdapterAssociation
+public class VertxManagedConnectionFactory extends AbstractJcaBase  implements ManagedConnectionFactory, ResourceAdapterAssociation, VertxLifecycleListener
 {
 
    /** The serial version UID */
@@ -61,6 +64,12 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
 
    /** The logwriter */
    private PrintWriter logwriter;
+   
+   /** Timeout in milliseconds waiting for the Vert.x starts up. Default to 10000, 10 seconds **/
+   @ConfigProperty(defaultValue = "10000")
+   private Long timeout;
+   
+   private Vertx vertx;
 
    /**
     * Default constructor
@@ -106,8 +115,39 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
          ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       log.finest("createManagedConnection()");
-      return new VertxManagedConnection(this, VertxPlatformFactory.instance().getOrCreateVertx(getVertxPlatformConfig()));
+      VertxPlatformFactory.instance().createVertxIfNotStart(getVertxPlatformConfig(), this);
+      long current = System.currentTimeMillis();
+      while (this.vertx == null)
+      {
+         long now = System.currentTimeMillis();
+         if (now - current > this.timeout)
+         {
+            throw new ResourceException("No Vert.x starts up within timeout: " + this.timeout + " milliseconds");
+         }
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            
+         }
+      }
+      return new VertxManagedConnection(this, vertx);
    }
+   
+   @Override
+   public void onCreate(Vertx vertx)
+   {
+      this.vertx = vertx;
+   }
+   
+   @Override
+   public void onGet(Vertx vertx)
+   {
+      this.vertx = vertx;
+   }
+   
 
    /**
     * Returns a matched connection from the candidate set of connections. 
@@ -187,6 +227,22 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
       this.ra = ra;
    }
    
+   
+   /**
+    * @return the timeout
+    */
+   public Long getTimeout()
+   {
+      return timeout;
+   }
+
+   /**
+    * @param timeout the timeout to set
+    */
+   public void setTimeout(Long timeout)
+   {
+      this.timeout = timeout;
+   }
 
    /* (non-Javadoc)
     * @see java.lang.Object#hashCode()

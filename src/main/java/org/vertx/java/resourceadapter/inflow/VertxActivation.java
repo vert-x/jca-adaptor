@@ -22,6 +22,8 @@
 package org.vertx.java.resourceadapter.inflow;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
@@ -32,6 +34,7 @@ import javax.resource.spi.work.WorkException;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.resourceadapter.VertxLifecycleListener;
 import org.vertx.java.resourceadapter.VertxPlatformFactory;
 import org.vertx.java.resourceadapter.VertxResourceAdapter;
 
@@ -40,9 +43,11 @@ import org.vertx.java.resourceadapter.VertxResourceAdapter;
  *
  * @version $Revision: $
  */
-public class VertxActivation
+public class VertxActivation implements VertxLifecycleListener
 {
 
+   private static Logger log = Logger.getLogger(VertxActivation.class.getName());
+   
    /** The resource adapter */
    private VertxResourceAdapter ra;
 
@@ -52,8 +57,6 @@ public class VertxActivation
    /** The message endpoint factory */
    private MessageEndpointFactory endpointFactory;
    
-   private Vertx vertx;
-
    /**
     * Whether delivery is active
     */
@@ -123,25 +126,42 @@ public class VertxActivation
    public void start() throws ResourceException
    {
       deliveryActive.set(true);
-      this.ra.getWorkManager().scheduleWork(new SetupAction());
+      this.ra.getWorkManager().scheduleWork(new SetupActivation());
    }
 
    
    private synchronized void setup() throws Exception
    {
-      this.vertx = VertxPlatformFactory.instance().getOrCreateVertx(this.spec.getVertxPlatformConfig());
-      if (this.vertx == null)
-      {
-         throw new ResourceException("No Vertx platform started.");
-      }
+      
+      VertxPlatformFactory.instance().createVertxIfNotStart(this.spec.getVertxPlatformConfig(), this);
+   }
+   
+   @Override
+   public synchronized void onCreate(Vertx vertx)
+   {
       String address = this.spec.getAddress();
-      final MessageEndpoint endPoint = this.endpointFactory.createEndpoint(null);
-      vertx.eventBus().registerHandler(address, new Handler<Message<?>>()
+      try
       {
-         public void handle(Message<?> message) {
-            ((VertxListener)endPoint).onMessage(message);
-         };
-      });
+         final MessageEndpoint endPoint = this.endpointFactory.createEndpoint(null);
+         log.log(Level.INFO, "Endpoint created, register Vertx handler on address: " + address);
+         vertx.eventBus().registerHandler(address, new Handler<Message<?>>()
+         {
+            public void handle(Message<?> message) {
+               ((VertxListener)endPoint).onMessage(message);
+            };
+         });
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Can't create the endpoint.", e);
+      }
+      
+   }
+   
+   @Override
+   public synchronized void onGet(Vertx vertx)
+   {
+      log.log(Level.FINEST, "Nothing to do.");
    }
    
    /**
@@ -156,29 +176,13 @@ public class VertxActivation
       }
       catch (WorkException e)
       {
-         handlerThrowable(e);
+         throw new RuntimeException("Can't stop the Vert.x platform.", e);
       }
    }
    
    private synchronized void tearDown()
    {
-      if (this.vertx != null)
-      {
-         try
-         {
-            VertxPlatformFactory.instance().stopPlatformManager(this.spec.getVertxPlatformConfig());            
-         }
-         finally
-         {
-            this.vertx = null;
-         }
-      }
-   }
-
-   private void handlerThrowable(Throwable t)
-   {
-      // TODO handle Throwable.
-      
+      VertxPlatformFactory.instance().stopPlatformManager(this.spec.getVertxPlatformConfig());
    }
    
    private class StopActivation implements Work
@@ -193,7 +197,7 @@ public class VertxActivation
          }
          catch (Exception e)
          {
-            handlerThrowable(e);
+            throw new RuntimeException("Can't stop the Vert.x platform.", e);
          }
       }
 
@@ -204,7 +208,7 @@ public class VertxActivation
       
    }
    
-   private class SetupAction implements Work
+   private class SetupActivation implements Work
    {
 
       @Override
@@ -216,7 +220,7 @@ public class VertxActivation
          }
          catch (Exception e)
          {
-            handlerThrowable(e);
+            throw new RuntimeException("Can't start the Vert.x platform.", e);
          }
       }
 

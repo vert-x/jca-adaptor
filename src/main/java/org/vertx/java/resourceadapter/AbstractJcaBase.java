@@ -67,6 +67,7 @@ public abstract class AbstractJcaBase
       this.vertxPlatformConfig.setClusterConfiguratoinFile(clusterConfigFile);
    }
 
+   
 
    public VertxPlatformConfiguration getVertxPlatformConfig()
    {

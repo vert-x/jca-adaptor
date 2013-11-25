@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.impl.ConcurrentHashSet;
@@ -55,18 +57,19 @@ public class VertxPlatformFactory
    }
 
    /**
-    * Gets or creates a Vert.x according to configuration.
+    * Creates a Vertx if one is not started yet.
     * 
-    * @param config
-    * @return a Vertx embedded environment
+    * @param config the configuration to start a vertx
+    * @param lifecyleListener the vertx lifecycle listener
     */
-   public synchronized Vertx getOrCreateVertx(VertxPlatformConfiguration config)
+   public synchronized void createVertxIfNotStart(final VertxPlatformConfiguration config, final VertxLifecycleListener lifecyleListener)
    {
       Vertx vertx = this.vertxPlatforms.get(config);
       if (vertx != null)
       {
          log.log(Level.INFO, "Vert.x platform at address: " + config.getVertxPlatformAddress() + " has been started already.");
-         return vertx;
+         lifecyleListener.onGet(vertx);
+         return;
       }
       Integer clusterPort = config.getClusterPort();
       String clusterHost = config.getClusterHost();
@@ -89,15 +92,89 @@ public class VertxPlatformFactory
       {
          log.log(Level.INFO, "Using Cluster file: " + clusterFile);
       }
-      vertx = VertxFactory.newVertx(clusterPort, clusterHost);
-      
-      // in cluster mode, there will be some time delay before the event bus can be used. !!! How to handle that?
-      log.log(Level.INFO, "Vert.x Platform at address: " + config.getVertxPlatformAddress() + " Started Successfully.");
-      
-      this.vertxPlatforms.putIfAbsent(config, vertx);
-      return vertx;
+      VertxFactory.newVertx(clusterPort, clusterHost, new Handler<AsyncResult<Vertx>>()
+      {
+         @Override
+         public void handle(AsyncResult<Vertx> result)
+         {
+            if (result.succeeded())
+            {
+               log.log(Level.INFO, "Vert.x Platform at address: " + config.getVertxPlatformAddress() + " Started Successfully.");
+               vertxPlatforms.putIfAbsent(config, result.result());
+               lifecyleListener.onCreate(result.result());
+            }
+            else if (result.failed())
+            {
+               log.log(Level.SEVERE, "Failed to start Vert.x at: " + config.getVertxPlatformAddress());
+               Throwable cause = result.cause();
+               if (cause != null)
+               {
+                  throw new RuntimeException(cause);
+               }
+            }
+         }
+      });
    }
    
+//   /**
+//    * Gets or creates a Vert.x according to configuration.
+//    * 
+//    * @param config
+//    * @return a Vertx embedded environment
+//    */
+//   public synchronized Vertx getOrCreateVertx(final VertxPlatformConfiguration config)
+//   {
+//      Vertx vertx = this.vertxPlatforms.get(config);
+//      if (vertx != null)
+//      {
+//         log.log(Level.INFO, "Vert.x platform at address: " + config.getVertxPlatformAddress() + " has been started already.");
+//         return vertx;
+//      }
+//      Integer clusterPort = config.getClusterPort();
+//      String clusterHost = config.getClusterHost();
+//      if (clusterHost == null || clusterHost.length() == 0)
+//      {
+//         log.log(Level.INFO, "Cluster Host is not set, use '127.0.0.1' by default.");
+//         clusterHost = "localhost";
+//      }
+//      if (clusterPort == null)
+//      {
+//         log.log(Level.INFO, "Cluster Port is not set, use 0 to random choose available port.");
+//         clusterPort = Integer.valueOf(0);
+//      }
+//      
+//      log.log(Level.INFO, "Starts a Vert.x platform at address: " + config.getVertxPlatformAddress());
+//      
+//      String clusterFile = config.getClusterConfiguratoinFile();
+//      System.setProperty("vertx.ra.cluster.file", clusterFile); 
+//      if (clusterFile != null && clusterFile.length() > 0)
+//      {
+//         log.log(Level.INFO, "Using Cluster file: " + clusterFile);
+//      }
+//      VertxFactory.newVertx(clusterPort, clusterHost, new Handler<AsyncResult<Vertx>>()
+//      {
+//         @Override
+//         public void handle(AsyncResult<Vertx> result)
+//         {
+//            if (result.succeeded())
+//            {
+//               log.log(Level.INFO, "Vert.x Platform at address: " + config.getVertxPlatformAddress() + " Started Successfully.");
+//               vertxPlatforms.putIfAbsent(config, result.result());
+//            }
+//            else if (result.failed())
+//            {
+//               log.log(Level.SEVERE, "Failed to start Vert.x at: " + config.getVertxPlatformAddress());
+//               Throwable cause = result.cause();
+//               if (cause != null)
+//               {
+//                  throw new RuntimeException(cause);
+//               }
+//            }
+//         }
+//      });
+//      return vertx;
+//   }
+//   
    /**
     * Adds VertxHolder to be recorded.
     * 
