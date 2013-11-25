@@ -132,25 +132,21 @@ IronJacamar
    
 The shipped .rar file contains an ironjacamar.xml file in 'META-INF/ironjacamar.xml', which will active by default if you deploy it to a WildFly application server.
 
-<pre>
-
-%lt;ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
+<ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.ironjacamar.org/doc/schema 
-             http://www.ironjacamar.org/doc/schema/ironjacamar_1_1.xsd"%gt;
+             http://www.ironjacamar.org/doc/schema/ironjacamar_1_1.xsd">
              
-  %lt;transaction-support%gt;NoTransaction%lt;/transaction-support%gt;
+  <transaction-support>NoTransaction</transaction-support>
   
-  %lt;connection-definitions%gt;
-    %lt;connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory"%gt;
-      %lt;config-property name="clusterHost"%gt;localhost%lt;/config-property%gt;
-      %lt;config-property name="clusterPort"%gt;4041%lt;/config-property%gt;
-    %lt;/connection-definition%gt;
-  %lt;/connection-definitions%gt;
+  <connection-definitions>
+    <connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory">
+      <config-property name="clusterHost">localhost</config-property>
+      <config-property name="clusterPort">4041</config-property>
+    </connection-definition>
+  </connection-definitions>
 
-%lt;/ironjacamar%gt;
-
-</pre>
+</ironjacamar>
 
 
 Build
