@@ -16,37 +16,36 @@ Outbound communication
 
 An application component like a web application(a .war), an ejb instance can send message to the Vertx cluster using outbound communication.
 
-Typical usage is try to get the *org.vertx.java.resourceadapter.VertxConnectionFactory* using a JNDI lookup, or inject the resource using CDI, then gets one *org.vertx.java.resourceadapter.VertxConnection*
-instance, then you can get the *EventBus* or the *SharedData* Vertx provides.
+Typical usage is try to get the <b>org.vertx.java.resourceadapter.VertxConnectionFactory</b> using a JNDI lookup, or inject the resource using CDI, 
+then gets one <b>org.vertx.java.resourceadapter.VertxConnection</b> instance, then you can get the <b>EventBus</b> or the <b>SharedData</b> which Vertx provides.
 
 <pre>
 
-	        javax.naming.InitialContext ctx = null;
-	        org.vertx.java.resourceadapter.VertxConnection conn = null;
-	        try
-	        {
-	           ctx = new javax.naming.InitialContext();
-	           org.vertx.java.resourceadapter.VertxConnectionFactory connFactory = 
-	           (org.vertx.java.resourceadapter.VertxConnectionFactory)ctx.lookup("java:/eis/VertxConnectionFactory");
-	           conn = connFactory.getVertxConnection();
-	           conn.eventBus().send("outbound-address", "Hello from JCA");
-	        }
-	        catch (Exception e)
-	        {
-	           e.printStackTrace();
-	        }
-	        finally
-	        {
-	           if (ctx != null)
-	           {
-	              ctx.close();  
-	           }
-	           if (conn != null)
-	           {
-	              conn.close();  
-	           }
-	        }
-	     }
+javax.naming.InitialContext ctx = null;
+org.vertx.java.resourceadapter.VertxConnection conn = null;
+try
+{
+   ctx = new javax.naming.InitialContext();
+   org.vertx.java.resourceadapter.VertxConnectionFactory connFactory = 
+   (org.vertx.java.resourceadapter.VertxConnectionFactory)ctx.lookup("java:/eis/VertxConnectionFactory");
+   conn = connFactory.getVertxConnection();
+   conn.eventBus().send("outbound-address", "Hello from JCA");
+}
+catch (Exception e)
+{
+   e.printStackTrace();
+}
+finally
+{
+   if (ctx != null)
+   {
+      ctx.close();  
+   }
+   if (conn != null)
+   {
+      conn.close();  
+   }
+}
 </pre>
 
    * NOTE: always call *org.vertx.java.resourceadapter.VertxConnection.close()* when you does not need the connection anymore, otherwise the connection pool will be full very soon.
@@ -114,13 +113,13 @@ Configuration
 
 The configuration of outbound and inbound are same, they are:
 
-   * clusterHost
+   * <b>clusterHost</b>
      * Type: java.lang.String
      * <b>clusterHost</b> specifies which network interface the distributed event bus will be bound to. Default to 'localhost'.
-   * clusterPort
-   * Type: java.lang.Integer
+   * <b>clusterPort</b>
+     * Type: java.lang.Integer
      * <b>clusterPort</b> specifies which port the distributed event bus will be bound to. Default to 0, means random available port.
-   * clusterConfiguratoinFile
+   * <b>clusterConfiguratoinFile</b>
      * Type: java.lang.String
      * <b>clusterConfiguratoinFile</b> specifies which cluster file will be used to join the vertx cluster. Default to 'cluster.xml'. 
      The resource adapter ships a 'cluster.xml' inside the .rar file, which uses tcp-ip network join on '127.0.0.1'
@@ -135,25 +134,33 @@ The shipped .rar file contains an ironjacamar.xml file in 'META-INF/ironjacamar.
 
 <pre>
 
-<ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
+%lt;ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.ironjacamar.org/doc/schema 
-             http://www.ironjacamar.org/doc/schema/ironjacamar_1_1.xsd">
+             http://www.ironjacamar.org/doc/schema/ironjacamar_1_1.xsd"%gt;
              
-  <transaction-support>NoTransaction</transaction-support>
+  %lt;transaction-support%gt;NoTransaction%lt;/transaction-support%gt;
   
-  <connection-definitions>
-    <connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory">
-      <config-property name="clusterHost">localhost</config-property>
-      <config-property name="clusterPort">4041</config-property>
-    </connection-definition>
-  </connection-definitions>
+  %lt;connection-definitions%gt;
+    %lt;connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory"%gt;
+      %lt;config-property name="clusterHost"%gt;localhost%lt;/config-property%gt;
+      %lt;config-property name="clusterPort"%gt;4041%lt;/config-property%gt;
+    %lt;/connection-definition%gt;
+  %lt;/connection-definitions%gt;
 
-</ironjacamar>
+%lt;/ironjacamar%gt;
 
 </pre>
 
 
+Build
+-------
+
+It uses gradle for the building, change your current working directory to the codes, then run the command:
+
+> ./gradlew 
+
+It will generate the resource adapter file (.rar file) in the *build/libs/* directory.
 
 
 Where to get the binarary
