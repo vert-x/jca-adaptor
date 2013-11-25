@@ -32,6 +32,7 @@ import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.TransactionSupport;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 
 import org.vertx.java.resourceadapter.inflow.VertxActivation;
@@ -64,7 +65,7 @@ public class VertxResourceAdapter extends AbstractJcaBase implements ResourceAda
    /** The activations by activation spec */
    private ConcurrentHashMap<VertxActivationSpec, VertxActivation> activations;
    
-   private BootstrapContext bootStrapCtx;
+   private WorkManager workManager;
    
    /**
     * Default constructor
@@ -119,22 +120,26 @@ public class VertxResourceAdapter extends AbstractJcaBase implements ResourceAda
       throws ResourceAdapterInternalException
    {
       log.finest("sets up configuration.");
-      this.bootStrapCtx = ctx;
+      this.workManager = ctx.getWorkManager();
    }
    
-   public BootstrapContext getBootStrapCtx()
+   public WorkManager getWorkManager()
    {
-      return bootStrapCtx;
+      return workManager;
    }
    
    /**
     * This is called when a resource adapter instance is undeployed or
     * during application server shutdown. 
+    * 
+    * It will stop all Vert.x embedded platform.
+    * 
     */
    public void stop()
    {
       log.finest("stop()");
-      this.bootStrapCtx = null;
+      this.workManager = null;
+      VertxPlatformFactory.instance().clear();
    }
 
    /**

@@ -50,7 +50,11 @@ public interface VertxConnection
    public SharedData getSharedData() throws ResourceException;
    
    /**
-    * Closes the connection to the Vert.x platform.
+    * Closes the connection.
+    * 
+    * The close action does nothing about the underline Vert.x platform.
+    * 
+    * After this method call, next eventBus() and getSharedData() will return null. 
     * 
     * @throws ResourceException Thrown if the connection failed close.
     */

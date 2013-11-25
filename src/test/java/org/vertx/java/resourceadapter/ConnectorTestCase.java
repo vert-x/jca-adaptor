@@ -35,13 +35,18 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.platform.PlatformLocator;
 import org.vertx.java.platform.PlatformManager;
+import org.vertx.java.platform.impl.DefaultContainer;
+import org.vertx.java.platform.impl.DefaultPlatformManager;
 
 /**
  * ConnectorTestCase
@@ -84,26 +89,31 @@ public class ConnectorTestCase
    @Resource(mappedName = "java:/eis/VertxConnectionFactory")
    private VertxConnectionFactory connectionFactory;
 
+   @Resource(mappedName = "java:/eis/VertxConnectionFactory")
+   private VertxConnectionFactory connectionFactory2;
+   
    /**
     * Test getConnection
     *
     * @exception Throwable Thrown if case of an error
     */
    @Test
+   @Ignore
    public void testGetConnection() throws Throwable
    {
       assertNotNull(connectionFactory);
-      VertxConnection conn = connectionFactory.getVertxConnection();
-      assertNotNull(conn);
+      assertNotNull(connectionFactory2);
       
-      final EventBus eventBus = conn.eventBus();
+      final EventBus eventBus = connectionFactory.getVertxConnection().eventBus();
       assertNotNull(eventBus);
+      
+      EventBus bus2 = connectionFactory2.getVertxConnection().eventBus();
+      Assert.assertEquals(eventBus, bus2);
       
       VertxPlatformConfiguration config = new VertxPlatformConfiguration();
       config.setClusterHost("localhost");
       
-      PlatformManager platForm = VertxPlatformFactory.instance().getVertxPlatformManager(config);
-      
+      PlatformManager platForm = PlatformLocator.factory.createPlatformManager(config.getClusterPort(), config.getClusterHost());
       platForm.deployVerticle(OutboundTestVerticle.class.getName(), null, new URL[]{}, 1, null, new Handler<AsyncResult<String>>()
       {
          public void handle(AsyncResult<String> event) {
@@ -134,5 +144,5 @@ public class ConnectorTestCase
       }
       Assert.assertTrue(this.testGetConnectionCompleted);
    }
-
+   
 }

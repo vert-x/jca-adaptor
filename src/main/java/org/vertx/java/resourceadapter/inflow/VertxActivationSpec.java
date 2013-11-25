@@ -32,7 +32,6 @@ import javax.validation.constraints.NotNull;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.resourceadapter.AbstractJcaBase;
-import org.vertx.java.resourceadapter.VertxResourceAdapter;
 
 /**
  * VertxActivationSpec
@@ -134,7 +133,7 @@ public class VertxActivationSpec extends AbstractJcaBase implements ActivationSp
          return false;
       if (getClass() != obj.getClass())
          return false;
-      VertxResourceAdapter other = (VertxResourceAdapter) obj;
+      VertxActivationSpec other = (VertxActivationSpec) obj;
       return super.equals(other);
    }
 

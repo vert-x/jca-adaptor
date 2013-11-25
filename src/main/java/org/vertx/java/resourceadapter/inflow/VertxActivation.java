@@ -21,18 +21,20 @@
  */
 package org.vertx.java.resourceadapter.inflow;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.platform.PlatformManager;
-import org.vertx.java.resourceadapter.VertxPlatformFactory;
-import org.vertx.java.resourceadapter.VertxResourceAdapter;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkException;
+
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.resourceadapter.VertxPlatformFactory;
+import org.vertx.java.resourceadapter.VertxResourceAdapter;
 
 /**
  * VertxActivation
@@ -51,12 +53,30 @@ public class VertxActivation
    /** The message endpoint factory */
    private MessageEndpointFactory endpointFactory;
    
-   private PlatformManager platformManager;
+   /**
+    * The onMessage method
+    */
+   public static final Method ONMESSAGE;
+   
+   private Vertx vertx;
 
    /**
     * Whether delivery is active
     */
    private final AtomicBoolean deliveryActive = new AtomicBoolean(false);
+   
+   
+   static 
+   {
+      try
+      {
+         ONMESSAGE = Handler.class.getMethod("handle", new Class[] { Message.class });
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e);
+      }
+   }
    
    /**
     * Default constructor
@@ -109,20 +129,20 @@ public class VertxActivation
    public void start() throws ResourceException
    {
       deliveryActive.set(true);
-      this.ra.getBootStrapCtx().getWorkManager().scheduleWork(new SetupAction());
+      this.ra.getWorkManager().scheduleWork(new SetupAction());
    }
 
    
    private synchronized void setup() throws Exception
    {
-      this.platformManager = VertxPlatformFactory.instance().getVertxPlatformManager(this.spec.getVertxPlatformConfig());
-      if (this.platformManager == null)
+      this.vertx = VertxPlatformFactory.instance().getOrCreateVertx(this.spec.getVertxPlatformConfig());
+      if (this.vertx == null)
       {
          throw new ResourceException("No Vertx platform started.");
       }
       String address = this.spec.getAddress();
       final MessageEndpoint endPoint = this.endpointFactory.createEndpoint(null);
-      platformManager.vertx().eventBus().registerHandler(address, new Handler<Message<?>>()
+      vertx.eventBus().registerHandler(address, new Handler<Message<?>>()
       {
          public void handle(Message<?> message) {
             ((Handler<Message<?>>)endPoint).handle(message);
@@ -136,21 +156,57 @@ public class VertxActivation
    public void stop()
    {
       deliveryActive.set(false);
-      tearDown();
+      try
+      {
+         this.ra.getWorkManager().scheduleWork(new StopActivation());
+      }
+      catch (WorkException e)
+      {
+         handlerThrowable(e);
+      }
    }
    
    private synchronized void tearDown()
    {
-      if (this.platformManager != null)
+      if (this.vertx != null)
       {
-         this.platformManager.stop();
-         this.platformManager = null;
+         try
+         {
+            VertxPlatformFactory.instance().stopPlatformManager(this.spec.getVertxPlatformConfig());            
+         }
+         finally
+         {
+            this.vertx = null;
+         }
       }
    }
 
    private void handlerThrowable(Throwable t)
    {
       // TODO handle Throwable.
+      
+   }
+   
+   private class StopActivation implements Work
+   {
+
+      @Override
+      public void run()
+      {
+         try
+         {
+            tearDown();
+         }
+         catch (Exception e)
+         {
+            handlerThrowable(e);
+         }
+      }
+
+      @Override
+      public void release()
+      {
+      }
       
    }
    

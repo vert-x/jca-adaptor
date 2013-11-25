@@ -51,40 +51,6 @@ public abstract class AbstractJcaBase
    }
 
    /**
-    * @return the quorumSize
-    */
-   @ConfigProperty
-   public Integer getQuorumSize()
-   {
-      return this.vertxPlatformConfig.getQuorumSize();
-   }
-
-   /**
-    * @param quorumSize the quorumSize to set
-    */
-   public void setQuorumSize(Integer quorumSize)
-   {
-      this.vertxPlatformConfig.setQuorumSize(quorumSize);
-   }
-
-   /**
-    * @return the haGroup
-    */
-   @ConfigProperty
-   public String getHaGroup()
-   {
-      return this.vertxPlatformConfig.getHaGroup();
-   }
-
-   /**
-    * @param haGroup the haGroup to set
-    */
-   public void setHaGroup(String haGroup)
-   {
-      this.vertxPlatformConfig.setHaGroup(haGroup);
-   }
-
-   /**
     * @return the clusterConfigFile
     */
    @ConfigProperty(defaultValue = "cluster.xml")

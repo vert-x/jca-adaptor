@@ -1,1 +1,2 @@
+org.vertx.java.resourceadapter.cluster.HazelcastClusterManagerFactory
 org.vertx.java.spi.cluster.impl.hazelcast.HazelcastClusterManagerFactory

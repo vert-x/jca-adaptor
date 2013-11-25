@@ -71,7 +71,7 @@ public class VertxConnectionImpl implements VertxConnection
    @Override
    public void close() throws ResourceException
    {
-      this.mc.close();
+      this.mc.closeHandle(this);
       this.mc = null;
    }
    

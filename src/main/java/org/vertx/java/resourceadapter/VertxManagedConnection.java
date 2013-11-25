@@ -65,19 +65,25 @@ public class VertxManagedConnection implements ManagedConnection
    /** Connection */
    private VertxConnectionImpl vertxConn;
    
-   /** The underline Vertx platform **/
-   private Vertx vertx;
-
+   /** The Vert.x Platform **/
+   private final Vertx vertx;
+   
    /**
     * Default constructor
     * @param mcf mcf
     */
-   public VertxManagedConnection(VertxManagedConnectionFactory mcf) throws ResourceException
+   public VertxManagedConnection(VertxManagedConnectionFactory mcf, Vertx vertx) throws ResourceException
    {
       this.mcf = mcf;
+      this.vertx = vertx;
       this.logwriter = null;
       this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
       this.vertxConn = null;
+   }
+   
+   public VertxManagedConnectionFactory getManagementConnectionFactory()
+   {
+      return this.mcf;
    }
 
    /**
@@ -136,7 +142,6 @@ public class VertxManagedConnection implements ManagedConnection
    public void destroy() throws ResourceException
    {
       log.finest("destroy()");
-      tearDownVertx();
    }
 
    /**
@@ -238,42 +243,15 @@ public class VertxManagedConnection implements ManagedConnection
       return new VertxManagedConnectionMetaData();
    }
 
-   private void setUpVertx()
-   {
-      if (this.vertx == null)
-      {
-         log.finest("Sets up Vertx");
-         this.vertx = VertxPlatformFactory.instance().getVertxPlatformManager(this.mcf.getVertxPlatformConfig()).vertx();
-      }
-   }
-   
    EventBus getEventBus()
    {
-      log.finest("getEventBus()");
-      setUpVertx();
       return this.vertx.eventBus();
    }
    
+
    SharedData getSharedData()
    {
-      setUpVertx();
       return this.vertx.sharedData();
-   }
-   
-   void close()
-   {
-      tearDownVertx();
-   }
-
-   private void tearDownVertx()
-   {
-      if (this.vertx != null)
-      {
-         log.finest("Tears down Vertx");
-         this.vertx.stop();
-         closeHandle(vertxConn);
-         this.vertx = null;
-      }
    }
 
 }

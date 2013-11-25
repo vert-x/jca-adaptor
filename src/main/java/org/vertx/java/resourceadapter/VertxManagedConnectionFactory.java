@@ -106,7 +106,7 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
          ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       log.finest("createManagedConnection()");
-      return new VertxManagedConnection(this);
+      return new VertxManagedConnection(this, VertxPlatformFactory.instance().getOrCreateVertx(getVertxPlatformConfig()));
    }
 
    /**
@@ -129,9 +129,13 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
          ManagedConnection mc = (ManagedConnection)it.next();
          if (mc instanceof VertxManagedConnection)
          {
-            // same MCF represents same Vertx platform, 
-            result = mc;
-            break;
+            VertxManagedConnection vertMC = (VertxManagedConnection)mc;
+            if (this.equals(vertMC.getManagementConnectionFactory()))
+            {
+               // same MCF represents same Vertx platform
+               result = mc;
+               break;
+            }
          }
       }
       return result;
@@ -205,7 +209,7 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
          return false;
       if (getClass() != obj.getClass())
          return false;
-      VertxResourceAdapter other = (VertxResourceAdapter) obj;
+      VertxManagedConnectionFactory other = (VertxManagedConnectionFactory) obj;
       return super.equals(other);
    }
 

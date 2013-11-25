@@ -24,11 +24,16 @@ public class VertxPlatformConfiguration implements Serializable
    
    private String clusterHost;
    
-   private String haGroup;
-   
-   private Integer quorumSize;
-   
    private String clusterConfiguratoinFile;
+   
+   public String getVertxPlatformKey()
+   {
+      StringBuilder sb = new StringBuilder();
+      sb.append(getClusterHost());
+      sb.append(":");
+      sb.append(getClusterPort());
+      return sb.toString();
+   }
    
    
    /* (non-Javadoc)
@@ -42,8 +47,6 @@ public class VertxPlatformConfiguration implements Serializable
       result = prime * result + ((clusterConfiguratoinFile == null) ? 0 : clusterConfiguratoinFile.hashCode());
       result = prime * result + ((clusterHost == null) ? 0 : clusterHost.hashCode());
       result = prime * result + ((clusterPort == null) ? 0 : clusterPort.hashCode());
-      result = prime * result + ((haGroup == null) ? 0 : haGroup.hashCode());
-      result = prime * result + ((quorumSize == null) ? 0 : quorumSize.hashCode());
       return result;
    }
    /* (non-Javadoc)
@@ -80,20 +83,6 @@ public class VertxPlatformConfiguration implements Serializable
       }
       else if (!clusterPort.equals(other.clusterPort))
          return false;
-      if (haGroup == null)
-      {
-         if (other.haGroup != null)
-            return false;
-      }
-      else if (!haGroup.equals(other.haGroup))
-         return false;
-      if (quorumSize == null)
-      {
-         if (other.quorumSize != null)
-            return false;
-      }
-      else if (!quorumSize.equals(other.quorumSize))
-         return false;
       return true;
    }
    /**
@@ -101,6 +90,10 @@ public class VertxPlatformConfiguration implements Serializable
     */
    public Integer getClusterPort()
    {
+      if (clusterPort == null)
+      {
+         return Integer.valueOf(0);
+      }
       return clusterPort;
    }
    /**
@@ -115,6 +108,10 @@ public class VertxPlatformConfiguration implements Serializable
     */
    public String getClusterHost()
    {
+      if (clusterHost == null || clusterHost.trim().length() == 0)
+      {
+         return "localhost";
+      }
       return clusterHost;
    }
    /**
@@ -123,34 +120,6 @@ public class VertxPlatformConfiguration implements Serializable
    public void setClusterHost(String clusterHost)
    {
       this.clusterHost = clusterHost;
-   }
-   /**
-    * @return the haGroup
-    */
-   public String getHaGroup()
-   {
-      return haGroup;
-   }
-   /**
-    * @param haGroup the haGroup to set
-    */
-   public void setHaGroup(String haGroup)
-   {
-      this.haGroup = haGroup;
-   }
-   /**
-    * @return the quorumSize
-    */
-   public Integer getQuorumSize()
-   {
-      return quorumSize;
-   }
-   /**
-    * @param quorumSize the quorumSize to set
-    */
-   public void setQuorumSize(Integer quorumSize)
-   {
-      this.quorumSize = quorumSize;
    }
    /**
     * @return the clusterConfiguratoinFile
