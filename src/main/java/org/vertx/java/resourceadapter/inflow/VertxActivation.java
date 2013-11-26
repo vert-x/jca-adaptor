@@ -22,7 +22,6 @@
 package org.vertx.java.resourceadapter.inflow;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -132,7 +131,6 @@ public class VertxActivation implements VertxLifecycleListener
    {
       deliveryActive.set(true);
       VertxPlatformFactory.instance().createVertxIfNotStart(this.spec.getVertxPlatformConfig(), this);
-//      this.ra.getWorkManager().scheduleWork(new SetupActivation());
       setup();
    }
 
@@ -192,7 +190,6 @@ public class VertxActivation implements VertxLifecycleListener
       this.vertx = vertx;
    }
    
-   
    private void handleMessage(MessageEndpoint endPoint, Message<?> message)
    {
       try
@@ -218,15 +215,6 @@ public class VertxActivation implements VertxLifecycleListener
    {
       deliveryActive.set(false);
       tearDown();
-      
-//      try
-//      {
-//         this.ra.getWorkManager().scheduleWork(new StopActivation());
-//      }
-//      catch (WorkException e)
-//      {
-//         throw new RuntimeException("Can't stop the Vert.x platform.", e);
-//      }
    }
    
    private void tearDown()
@@ -261,53 +249,5 @@ public class VertxActivation implements VertxLifecycleListener
       }
       
    }
-   
-   private class StopActivation implements Work
-   {
-
-      @Override
-      public void run()
-      {
-         try
-         {
-            tearDown();
-         }
-         catch (Exception e)
-         {
-            throw new RuntimeException("Can't stop the Vert.x platform.", e);
-         }
-      }
-
-      @Override
-      public void release()
-      {
-      }
-      
-   }
-   
-   private class SetupActivation implements Work
-   {
-
-      @Override
-      public void run()
-      {
-         try
-         {
-            setup();
-         }
-         catch (Exception e)
-         {
-            throw new RuntimeException("Can't start the Vert.x platform.", e);
-         }
-      }
-
-      @Override
-      public void release()
-      {
-         
-      }
-      
-   }
-
 
 }
