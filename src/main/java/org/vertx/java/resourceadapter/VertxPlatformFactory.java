@@ -67,7 +67,7 @@ public class VertxPlatformFactory
       Vertx vertx = this.vertxPlatforms.get(config);
       if (vertx != null)
       {
-         log.log(Level.INFO, "Vert.x platform at address: " + config.getVertxPlatformAddress() + " has been started already.");
+         log.log(Level.INFO, "Vert.x platform at address: " + config.getVertxPlatformAddress() + " has been started.");
          lifecyleListener.onGet(vertx);
          return;
       }
@@ -95,7 +95,7 @@ public class VertxPlatformFactory
       VertxFactory.newVertx(clusterPort, clusterHost, new Handler<AsyncResult<Vertx>>()
       {
          @Override
-         public void handle(AsyncResult<Vertx> result)
+         public void handle(final AsyncResult<Vertx> result)
          {
             if (result.succeeded())
             {
@@ -155,8 +155,8 @@ public class VertxPlatformFactory
          this.vertxHolders.remove(holder);
       }
       else
-         log.log(Level.SEVERE, "Vertx Holder: " + holder.toString() + " is out of management.");
       {
+         log.log(Level.SEVERE, "Vertx Holder: " + holder.toString() + " is out of management.");
       }
    }
    
@@ -208,6 +208,7 @@ public class VertxPlatformFactory
       {
          log.log(Level.INFO, "Closing Vert.x Platform at address: " + entry.getKey().getVertxPlatformAddress());
          entry.getValue().stop();
+         log.log(Level.INFO, "Vert.x Platform at address: " + entry.getKey().getVertxPlatformAddress() + " is Closed.");
       }
       this.vertxPlatforms.clear();
       this.vertxHolders.clear();
