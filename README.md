@@ -177,5 +177,6 @@ Known Issues
    * This resource adapter uses it's own ClusterManagerFactory to be able to use different cluster files than 'cluster.xml' or/and 'default-cluster.xml',
  so you need to copy the vertx-resource-adapter.jar to &lt;Your Vertx Home&gt;/lib/ directory.
 
+   * There will be an exception when the resource adapter is undeployed if there is any Vert.x started up before, because there is no way to know the Vert.x is completed stopped yet.
 
 So Have fun!
