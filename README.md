@@ -115,14 +115,25 @@ The configuration of outbound and inbound are same, they are:
 
    * <b>clusterHost</b>
      * Type: java.lang.String
+     * Outbound / Inbound
      * <b>clusterHost</b> specifies which network interface the distributed event bus will be bound to. Default to 'localhost'.
    * <b>clusterPort</b>
      * Type: java.lang.Integer
+     * Outbound / Inbound
      * <b>clusterPort</b> specifies which port the distributed event bus will be bound to. Default to 0, means random available port.
    * <b>clusterConfiguratoinFile</b>
      * Type: java.lang.String
+     * Outbound / Inbound
      * <b>clusterConfiguratoinFile</b> specifies which cluster file will be used to join the vertx cluster. Default to 'cluster.xml'. 
      The resource adapter ships a 'cluster.xml' inside the .rar file, which uses tcp-ip network join on '127.0.0.1'
+   * <b>timeout</b>
+     * Type: java.lang.Long
+     * Outbound / Inbound
+     * <b>timeout</b> specifies the milliseconds timeout waiting for the Vert.x starts up. Default to 30000, 30 seconds.
+   * <b>address</b>
+     * Type: java.lang.String
+     * Inbound Only
+     * <b>address</b> specifies in which vertx event bus address the Endpoint(MDB) listen.
 
 
 IronJacamar
@@ -163,6 +174,7 @@ It will generate the resource adapter file (.rar file) in the *build/libs/* dire
 Where to get the binarary
 -------
 TODO
+There is no place to get the binarary yet, you can clone the code and build it from source.
 
 Examples
 -------
