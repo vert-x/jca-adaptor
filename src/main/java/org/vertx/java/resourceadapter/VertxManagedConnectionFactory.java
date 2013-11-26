@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
-import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ConnectionDefinition;
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -64,10 +63,6 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
 
    /** The logwriter */
    private PrintWriter logwriter;
-   
-   /** Timeout in milliseconds waiting for the Vert.x starts up. Default to 10000, 10 seconds **/
-   @ConfigProperty(defaultValue = "10000")
-   private Long timeout;
    
    private Vertx vertx;
 
@@ -120,9 +115,9 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
       while (this.vertx == null)
       {
          long now = System.currentTimeMillis();
-         if (now - current > this.timeout)
+         if (now - current > getTimeout())
          {
-            throw new ResourceException("No Vert.x starts up within timeout: " + this.timeout + " milliseconds");
+            throw new ResourceException("No Vert.x starts up within timeout: " + getTimeout() + " milliseconds");
          }
          try
          {
@@ -225,23 +220,6 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
    {
       log.finest("setResourceAdapter()");
       this.ra = ra;
-   }
-   
-   
-   /**
-    * @return the timeout
-    */
-   public Long getTimeout()
-   {
-      return timeout;
-   }
-
-   /**
-    * @param timeout the timeout to set
-    */
-   public void setTimeout(Long timeout)
-   {
-      this.timeout = timeout;
    }
 
    /* (non-Javadoc)

@@ -22,6 +22,7 @@
 package org.vertx.java.resourceadapter.inflow;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +57,10 @@ public class VertxActivation implements VertxLifecycleListener
 
    /** The message endpoint factory */
    private MessageEndpointFactory endpointFactory;
+   
+   private Vertx vertx;
+   
+   private Handler<Message<?>> messageHandler;
    
    /**
     * Whether delivery is active
@@ -126,42 +131,84 @@ public class VertxActivation implements VertxLifecycleListener
    public void start() throws ResourceException
    {
       deliveryActive.set(true);
-      this.ra.getWorkManager().scheduleWork(new SetupActivation());
+      VertxPlatformFactory.instance().createVertxIfNotStart(this.spec.getVertxPlatformConfig(), this);
+//      this.ra.getWorkManager().scheduleWork(new SetupActivation());
+      setup();
    }
 
    
-   private synchronized void setup() throws Exception
-   {
-      
-      VertxPlatformFactory.instance().createVertxIfNotStart(this.spec.getVertxPlatformConfig(), this);
-   }
-   
-   @Override
-   public synchronized void onCreate(Vertx vertx)
+   private void setup()
    {
       String address = this.spec.getAddress();
       try
       {
+
          final MessageEndpoint endPoint = this.endpointFactory.createEndpoint(null);
-         log.log(Level.INFO, "Endpoint created, register Vertx handler on address: " + address);
-         vertx.eventBus().registerHandler(address, new Handler<Message<?>>()
+         this.messageHandler = new Handler<Message<?>>()
          {
-            public void handle(Message<?> message) {
-               ((VertxListener)endPoint).onMessage(message);
-            };
-         });
+            public void handle(Message<?> message)
+            {
+               handleMessage(endPoint, message);
+            }
+         };
+         waitingVertx();
+         vertx.eventBus().registerHandler(address, messageHandler);
+         log.log(Level.INFO, "Endpoint created, register Vertx handler on address: " + address);
       }
       catch (Exception e)
       {
          throw new RuntimeException("Can't create the endpoint.", e);
       }
-      
+   }
+   
+   private void waitingVertx() throws ResourceException
+   {
+      if (this.vertx != null)
+      {
+         log.log(Level.FINEST, "Vert.x Was Started.");
+         return;
+      }
+      long current = System.currentTimeMillis();
+      while (this.vertx == null)
+      {
+         long now = System.currentTimeMillis();
+         if (now - current > this.spec.getTimeout())
+         {
+            throw new ResourceException("No Vert.x starts up within timeout: " + this.spec.getTimeout() + " milliseconds");
+         }
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
    }
    
    @Override
-   public synchronized void onGet(Vertx vertx)
+   public void onCreate(Vertx vertx)
    {
-      log.log(Level.FINEST, "Nothing to do.");
+      this.vertx = vertx;
+   }
+   
+   
+   private void handleMessage(MessageEndpoint endPoint, Message<?> message)
+   {
+      try
+      {
+         ra.getWorkManager().scheduleWork(new HandleMessage(endPoint, message));
+      }
+      catch (WorkException e)
+      {
+         throw new RuntimeException("Can't handle message.", e);
+      }
+   }
+   
+   @Override
+   public void onGet(Vertx vertx)
+   {
+      this.vertx = vertx;
    }
    
    /**
@@ -170,19 +217,49 @@ public class VertxActivation implements VertxLifecycleListener
    public void stop()
    {
       deliveryActive.set(false);
-      try
-      {
-         this.ra.getWorkManager().scheduleWork(new StopActivation());
-      }
-      catch (WorkException e)
-      {
-         throw new RuntimeException("Can't stop the Vert.x platform.", e);
-      }
+      tearDown();
+      
+//      try
+//      {
+//         this.ra.getWorkManager().scheduleWork(new StopActivation());
+//      }
+//      catch (WorkException e)
+//      {
+//         throw new RuntimeException("Can't stop the Vert.x platform.", e);
+//      }
    }
    
-   private synchronized void tearDown()
+   private void tearDown()
    {
+      this.vertx.eventBus().unregisterHandler(this.spec.getAddress(), this.messageHandler);
       VertxPlatformFactory.instance().stopPlatformManager(this.spec.getVertxPlatformConfig());
+   }
+   
+   
+   private class HandleMessage implements Work
+   {
+      
+      private final MessageEndpoint endPoint;
+      private final Message<?> message;
+      
+      private HandleMessage(MessageEndpoint endPoint, Message<?> message)
+      {
+         this.endPoint = endPoint;
+         this.message = message;
+      }
+
+      @Override
+      public void run()
+      {
+         ((VertxListener)endPoint).onMessage(message);
+      }
+
+      @Override
+      public void release()
+      {
+         
+      }
+      
    }
    
    private class StopActivation implements Work

@@ -26,6 +26,25 @@ public class VertxPlatformConfiguration implements Serializable
    
    private String clusterConfiguratoinFile;
    
+   /** Timeout in milliseconds waiting for the Vert.x starts up. Default to 30000, 30 seconds **/
+   private Long timeout;
+   
+   /**
+    * @return the timeout
+    */
+   public Long getTimeout()
+   {
+      return timeout;
+   }
+
+   /**
+    * @param timeout the timeout to set
+    */
+   public void setTimeout(Long timeout)
+   {
+      this.timeout = timeout;
+   }
+
    @Override
    public String toString()
    {
