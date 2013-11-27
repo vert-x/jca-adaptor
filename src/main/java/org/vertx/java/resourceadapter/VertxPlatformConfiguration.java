@@ -48,74 +48,31 @@ public class VertxPlatformConfiguration implements Serializable
    @Override
    public String toString()
    {
-      StringBuilder sb = new StringBuilder(getVertxPlatformAddress());
-      if (this.clusterConfiguratoinFile != null && this.clusterConfiguratoinFile.length() > 0)
+      StringBuilder sb = new StringBuilder(getVertxPlatformIdentifier());
+      if (timeout != null)
       {
-         sb.append(":");
-         sb.append(this.clusterConfiguratoinFile);
+         sb.append(":timeout[");
+         sb.append(timeout);
+         sb.append("]");
       }
       return sb.toString();
    }
-   
-   public String getVertxPlatformAddress()
+      
+   public String getVertxPlatformIdentifier()
    {
       StringBuilder sb = new StringBuilder();
       sb.append(getClusterHost());
       sb.append(":");
       sb.append(getClusterPort());
+      if (this.clusterConfiguratoinFile != null && this.clusterConfiguratoinFile.length() > 0)
+      {
+         sb.append(":clusterFile[");
+         sb.append(this.clusterConfiguratoinFile);
+         sb.append("]");
+      }
       return sb.toString();
    }
-   
-   
-   /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
-   @Override
-   public int hashCode()
-   {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((clusterConfiguratoinFile == null) ? 0 : clusterConfiguratoinFile.hashCode());
-      result = prime * result + ((clusterHost == null) ? 0 : clusterHost.hashCode());
-      result = prime * result + ((clusterPort == null) ? 0 : clusterPort.hashCode());
-      return result;
-   }
-   /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      VertxPlatformConfiguration other = (VertxPlatformConfiguration) obj;
-      if (clusterConfiguratoinFile == null)
-      {
-         if (other.clusterConfiguratoinFile != null)
-            return false;
-      }
-      else if (!clusterConfiguratoinFile.equals(other.clusterConfiguratoinFile))
-         return false;
-      if (clusterHost == null)
-      {
-         if (other.clusterHost != null)
-            return false;
-      }
-      else if (!clusterHost.equals(other.clusterHost))
-         return false;
-      if (clusterPort == null)
-      {
-         if (other.clusterPort != null)
-            return false;
-      }
-      else if (!clusterPort.equals(other.clusterPort))
-         return false;
-      return true;
-   }
+  
    /**
     * @return the clusterPort
     */
@@ -165,6 +122,65 @@ public class VertxPlatformConfiguration implements Serializable
    public void setClusterConfiguratoinFile(String clusterConfiguratoinFile)
    {
       this.clusterConfiguratoinFile = clusterConfiguratoinFile;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((clusterConfiguratoinFile == null) ? 0 : clusterConfiguratoinFile.hashCode());
+      result = prime * result + ((clusterHost == null) ? 0 : clusterHost.hashCode());
+      result = prime * result + ((clusterPort == null) ? 0 : clusterPort.hashCode());
+      result = prime * result + ((timeout == null) ? 0 : timeout.hashCode());
+      return result;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      VertxPlatformConfiguration other = (VertxPlatformConfiguration) obj;
+      if (clusterConfiguratoinFile == null)
+      {
+         if (other.clusterConfiguratoinFile != null)
+            return false;
+      }
+      else if (!clusterConfiguratoinFile.equals(other.clusterConfiguratoinFile))
+         return false;
+      if (clusterHost == null)
+      {
+         if (other.clusterHost != null)
+            return false;
+      }
+      else if (!clusterHost.equals(other.clusterHost))
+         return false;
+      if (clusterPort == null)
+      {
+         if (other.clusterPort != null)
+            return false;
+      }
+      else if (!clusterPort.equals(other.clusterPort))
+         return false;
+      if (timeout == null)
+      {
+         if (other.timeout != null)
+            return false;
+      }
+      else if (!timeout.equals(other.timeout))
+         return false;
+      return true;
    }
    
 }

@@ -42,7 +42,7 @@ public class VertxPlatformFactory
     * All Vert.x platforms.
     * 
     */
-   private ConcurrentHashMap<VertxPlatformConfiguration, Vertx> vertxPlatforms = new ConcurrentHashMap<VertxPlatformConfiguration, Vertx>();
+   private ConcurrentHashMap<String, Vertx> vertxPlatforms = new ConcurrentHashMap<String, Vertx>();
    
    /**
     * All Vert.x holders
@@ -64,10 +64,10 @@ public class VertxPlatformFactory
     */
    public synchronized void createVertxIfNotStart(final VertxPlatformConfiguration config, final VertxLifecycleListener lifecyleListener)
    {
-      Vertx vertx = this.vertxPlatforms.get(config);
+      Vertx vertx = this.vertxPlatforms.get(config.getVertxPlatformIdentifier());
       if (vertx != null)
       {
-         log.log(Level.INFO, "Vert.x platform at address: " + config.getVertxPlatformAddress() + " has been started.");
+         log.log(Level.INFO, "Vert.x platform at: " + config.getVertxPlatformIdentifier() + " has been started.");
          lifecyleListener.onGet(vertx);
          return;
       }
@@ -84,7 +84,7 @@ public class VertxPlatformFactory
          clusterPort = Integer.valueOf(0);
       }
       
-      log.log(Level.INFO, "Starts a Vert.x platform at address: " + config.getVertxPlatformAddress());
+      log.log(Level.INFO, "Starts a Vert.x platform at: " + config.getVertxPlatformIdentifier());
       
       String clusterFile = config.getClusterConfiguratoinFile();
       System.setProperty("vertx.ra.cluster.file", clusterFile); 
@@ -99,13 +99,13 @@ public class VertxPlatformFactory
          {
             if (result.succeeded())
             {
-               log.log(Level.INFO, "Vert.x Platform at address: " + config.getVertxPlatformAddress() + " Started Successfully.");
-               vertxPlatforms.putIfAbsent(config, result.result());
+               log.log(Level.INFO, "Vert.x Platform at: " + config.getVertxPlatformIdentifier() + " Started Successfully.");
+               vertxPlatforms.putIfAbsent(config.getVertxPlatformIdentifier(), result.result());
                lifecyleListener.onCreate(result.result());
             }
             else if (result.failed())
             {
-               log.log(Level.SEVERE, "Failed to start Vert.x at: " + config.getVertxPlatformAddress());
+               log.log(Level.SEVERE, "Failed to start Vert.x at: " + config.getVertxPlatformIdentifier());
                Throwable cause = result.cause();
                if (cause != null)
                {
@@ -167,21 +167,21 @@ public class VertxPlatformFactory
     */
    public synchronized void stopPlatformManager(VertxPlatformConfiguration config)
    {
-      Vertx vertx = this.vertxPlatforms.get(config);
+      Vertx vertx = this.vertxPlatforms.get(config.getVertxPlatformIdentifier());
       if (vertx != null)
       {
          if (isVertxHolded(vertx))
          {
-            log.log(Level.WARNING, "Vertx at address: " + config.getVertxPlatformAddress() + " is taken, will not close it.");
+            log.log(Level.WARNING, "Vertx at: " + config.getVertxPlatformIdentifier() + " is taken, will not close it.");
             return;
          }
-         log.log(Level.INFO, "Stops the Vert.x platform at address: " + config.getVertxPlatformAddress());
+         log.log(Level.INFO, "Stops the Vert.x platform at: " + config.getVertxPlatformIdentifier());
          this.vertxPlatforms.remove(config);
          vertx.stop();
       }
       else
       {
-         log.log(Level.WARNING, "No Vert.x platform found at address: " + config.getVertxPlatformAddress());
+         log.log(Level.WARNING, "No Vert.x platform found at: " + config.getVertxPlatformIdentifier());
       }
    }
    
@@ -204,11 +204,11 @@ public class VertxPlatformFactory
     */
    public synchronized void clear()
    {
-      for (Map.Entry<VertxPlatformConfiguration, Vertx> entry: this.vertxPlatforms.entrySet())
+      for (Map.Entry<String, Vertx> entry: this.vertxPlatforms.entrySet())
       {
-         log.log(Level.INFO, "Closing Vert.x Platform at address: " + entry.getKey().getVertxPlatformAddress());
+         log.log(Level.INFO, "Closing Vert.x Platform at address: " + entry.getKey());
          entry.getValue().stop();
-         log.log(Level.INFO, "Vert.x Platform at address: " + entry.getKey().getVertxPlatformAddress() + " is Closed.");
+         log.log(Level.INFO, "Vert.x Platform at address: " + entry.getKey() + " is Closed.");
       }
       this.vertxPlatforms.clear();
       this.vertxHolders.clear();
