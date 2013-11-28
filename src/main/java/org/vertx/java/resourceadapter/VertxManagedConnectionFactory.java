@@ -114,10 +114,13 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
       long current = System.currentTimeMillis();
       while (this.vertx == null)
       {
-         long now = System.currentTimeMillis();
-         if (now - current > getTimeout())
+         if (getTimeout() != null)
          {
-            throw new ResourceException("No Vert.x starts up within timeout: " + getTimeout() + " milliseconds");
+            long now = System.currentTimeMillis();
+            if (now - current > getTimeout())
+            {
+               throw new ResourceException("No Vert.x starts up within timeout: " + getTimeout() + " milliseconds");
+            }
          }
          try
          {

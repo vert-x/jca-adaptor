@@ -169,10 +169,13 @@ public class VertxActivation implements VertxLifecycleListener
       long current = System.currentTimeMillis();
       while (this.vertx == null)
       {
-         long now = System.currentTimeMillis();
-         if (now - current > this.spec.getTimeout())
+         if (this.spec.getTimeout() != null)
          {
-            throw new ResourceException("No Vert.x starts up within timeout: " + this.spec.getTimeout() + " milliseconds");
+            long now = System.currentTimeMillis();
+            if (now - current > this.spec.getTimeout())
+            {
+               throw new ResourceException("No Vert.x starts up within timeout: " + this.spec.getTimeout() + " milliseconds");
+            }
          }
          try
          {
