@@ -23,7 +23,6 @@ package org.vertx.java.resourceadapter;
 
 import static org.junit.Assert.assertNotNull;
 
-import java.net.URL;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -35,18 +34,13 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.platform.PlatformLocator;
-import org.vertx.java.platform.PlatformManager;
-import org.vertx.java.platform.impl.DefaultContainer;
-import org.vertx.java.platform.impl.DefaultPlatformManager;
+import org.vertx.java.core.impl.DefaultVertx;
 
 /**
  * ConnectorTestCase
@@ -92,17 +86,17 @@ public class ConnectorTestCase
    @Resource(mappedName = "java:/eis/VertxConnectionFactory")
    private VertxConnectionFactory connectionFactory2;
    
+   private Vertx vertx;
+   
    /**
     * Test getConnection
     *
     * @exception Throwable Thrown if case of an error
     */
    @Test
-   @Ignore
    public void testGetConnection() throws Throwable
    {
       assertNotNull(connectionFactory);
-      assertNotNull(connectionFactory2);
       
       final EventBus eventBus = connectionFactory.getVertxConnection().eventBus();
       assertNotNull(eventBus);
@@ -112,37 +106,60 @@ public class ConnectorTestCase
       
       VertxPlatformConfiguration config = new VertxPlatformConfiguration();
       config.setClusterHost("localhost");
+      config.setClusterPort(4041); // same configure as the ra
       
-      PlatformManager platForm = PlatformLocator.factory.createPlatformManager(config.getClusterPort(), config.getClusterHost());
-      platForm.deployVerticle(OutboundTestVerticle.class.getName(), null, new URL[]{}, 1, null, new Handler<AsyncResult<String>>()
+      // Vertx has started already.
+      VertxPlatformFactory.instance().createVertxIfNotStart(config, new VertxLifecycleListener()
       {
-         public void handle(AsyncResult<String> event) {
-            Assert.assertTrue(event.succeeded());
-            eventBus.send("outbound-address", "JCA", new Handler<Message<String>>()
-                  {
-                     
-                     @Override
-                     public void handle(Message<String> msg)
-                     {
-                        String body = msg.body();
-                        try
-                        {
-                           Assert.assertEquals("Hello JCA from Outbound", body);
-                        }
-                        finally
-                        {
-                           testGetConnectionCompleted = true;
-                        }
-                     }
-                     
-                  });
-         };
+         
+         @Override
+         public void onGet(Vertx vertx)
+         {
+            ConnectorTestCase.this.vertx = vertx;
+         }
+         
+         @Override
+         public void onCreate(Vertx vertx)
+         {
+            ConnectorTestCase.this.vertx = vertx;
+         }
+         
       });
+      
+      TestVertxPlatformManager testPlatformManager = new TestVertxPlatformManager((DefaultVertx)vertx);
+      testPlatformManager.deployAndRunVerticle(OutboundTestVerticle.class.getName());
+      eventBus.send("outbound-address", "JCA", new Handler<Message<String>>()
+      {
+         
+         @Override
+         public void handle(Message<String> msg)
+         {
+            String body = msg.body();
+            try
+            {
+               Assert.assertEquals("Hello JCA from Outbound", body);
+            }
+            finally
+            {
+               testGetConnectionCompleted = true;
+            }
+         }
+         
+      });
+      
       while(!testGetConnectionCompleted)
       {
          Thread.sleep(1000);
       }
       Assert.assertTrue(this.testGetConnectionCompleted);
+      testCompleted();
+   }
+   
+   
+   private void testCompleted()
+   {
+      this.vertx.stop();
+      this.vertx = null;
    }
    
 }

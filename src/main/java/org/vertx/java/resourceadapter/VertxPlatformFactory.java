@@ -87,7 +87,10 @@ public class VertxPlatformFactory
       log.log(Level.INFO, "Starts a Vert.x platform at: " + config.getVertxPlatformIdentifier());
       
       String clusterFile = config.getClusterConfiguratoinFile();
-      System.setProperty("vertx.ra.cluster.file", clusterFile); 
+      if (clusterFile != null)
+      {
+         System.setProperty("vertx.ra.cluster.file", clusterFile);
+      }
       if (clusterFile != null && clusterFile.length() > 0)
       {
          log.log(Level.INFO, "Using Cluster file: " + clusterFile);
