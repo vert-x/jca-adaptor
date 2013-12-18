@@ -6,7 +6,6 @@ defaultTasks 'rar'
 group = 'org.vertx.java.resourceadapter'
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
-version = '0.0.1'
 
 configurations {
    compile {
