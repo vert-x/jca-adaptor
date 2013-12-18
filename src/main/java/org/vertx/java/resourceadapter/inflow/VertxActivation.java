@@ -34,7 +34,8 @@ import javax.resource.spi.work.WorkException;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.resourceadapter.VertxLifecycleListener;
+import org.vertx.java.resourceadapter.VertxHolder;
+import org.vertx.java.resourceadapter.VertxPlatformConfiguration;
 import org.vertx.java.resourceadapter.VertxPlatformFactory;
 import org.vertx.java.resourceadapter.VertxResourceAdapter;
 
@@ -43,7 +44,7 @@ import org.vertx.java.resourceadapter.VertxResourceAdapter;
  *
  * @version $Revision: $
  */
-public class VertxActivation implements VertxLifecycleListener
+public class VertxActivation implements VertxPlatformFactory.VertxListener, VertxHolder
 {
 
    private static Logger log = Logger.getLogger(VertxActivation.class.getName());
@@ -58,6 +59,8 @@ public class VertxActivation implements VertxLifecycleListener
    private MessageEndpointFactory endpointFactory;
    
    private Vertx vertx;
+   
+   private VertxPlatformConfiguration config;
    
    private Handler<Message<?>> messageHandler;
    
@@ -78,16 +81,6 @@ public class VertxActivation implements VertxLifecycleListener
          throw new RuntimeException(e);
       }
    }
-   
-   /**
-    * Default constructor
-    * @exception ResourceException Thrown if an error occurs
-    */
-   public VertxActivation() throws ResourceException
-   {
-      this(null, null, null);
-   }
-
    /**
     * Constructor
     * @param ra VertxResourceAdapter
@@ -103,6 +96,7 @@ public class VertxActivation implements VertxLifecycleListener
       this.ra = ra;
       this.endpointFactory = endpointFactory;
       this.spec = spec;
+      this.config = spec.getVertxPlatformConfig();
    }
 
    /**
@@ -129,18 +123,17 @@ public class VertxActivation implements VertxLifecycleListener
     */
    public void start() throws ResourceException
    {
-      deliveryActive.set(true);
-      VertxPlatformFactory.instance().createVertxIfNotStart(this.spec.getVertxPlatformConfig(), this);
-      setup();
+      if (deliveryActive.get() == false)
+      {
+         VertxPlatformFactory.instance().createVertxIfNotStart(this.config, this);
+      }
    }
-
    
    private void setup()
    {
       String address = this.spec.getAddress();
       try
       {
-
          final MessageEndpoint endPoint = this.endpointFactory.createEndpoint(null);
          this.messageHandler = new Handler<Message<?>>()
          {
@@ -149,7 +142,10 @@ public class VertxActivation implements VertxLifecycleListener
                handleMessage(endPoint, message);
             }
          };
-         waitingVertx();
+         if (this.vertx == null)
+         {
+            throw new ResourceException("Vertx platform did not start yet.");
+         }
          vertx.eventBus().registerHandler(address, messageHandler);
          log.log(Level.INFO, "Endpoint created, register Vertx handler on address: " + address);
       }
@@ -157,40 +153,6 @@ public class VertxActivation implements VertxLifecycleListener
       {
          throw new RuntimeException("Can't create the endpoint.", e);
       }
-   }
-   
-   private void waitingVertx() throws ResourceException
-   {
-      if (this.vertx != null)
-      {
-         log.log(Level.FINEST, "Vert.x Was Started.");
-         return;
-      }
-      long current = System.currentTimeMillis();
-      while (this.vertx == null)
-      {
-         if (this.spec.getTimeout() != null)
-         {
-            long now = System.currentTimeMillis();
-            if (now - current > this.spec.getTimeout())
-            {
-               throw new ResourceException("No Vert.x starts up within timeout: " + this.spec.getTimeout() + " milliseconds");
-            }
-         }
-         try
-         {
-            Thread.sleep(50);
-         }
-         catch (InterruptedException e)
-         {
-         }
-      }
-   }
-   
-   @Override
-   public void onCreate(Vertx vertx)
-   {
-      this.vertx = vertx;
    }
    
    private void handleMessage(MessageEndpoint endPoint, Message<?> message)
@@ -206,9 +168,23 @@ public class VertxActivation implements VertxLifecycleListener
    }
    
    @Override
-   public void onGet(Vertx vertx)
+   public void whenReady(Vertx vertx)
    {
+      if (deliveryActive.get())
+      {
+         log.log(Level.WARNING, "Vertx has been started.");
+         return;
+      }
       this.vertx = vertx;
+      VertxPlatformFactory.instance().addVertxHolder(this);
+      setup();
+      deliveryActive.set(true);
+   }
+   
+   @Override
+   public Vertx getVertx()
+   {
+      return this.vertx;
    }
    
    /**
@@ -216,14 +192,15 @@ public class VertxActivation implements VertxLifecycleListener
     */
    public void stop()
    {
-      deliveryActive.set(false);
       tearDown();
+      deliveryActive.set(false);
    }
    
    private void tearDown()
    {
       this.vertx.eventBus().unregisterHandler(this.spec.getAddress(), this.messageHandler);
-      VertxPlatformFactory.instance().stopPlatformManager(this.spec.getVertxPlatformConfig());
+      VertxPlatformFactory.instance().removeVertxHolder(this);
+      VertxPlatformFactory.instance().stopPlatformManager(this.config);
    }
    
    
@@ -250,7 +227,6 @@ public class VertxActivation implements VertxLifecycleListener
       {
          
       }
-      
    }
 
 }

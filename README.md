@@ -77,7 +77,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
        activationConfig = {
                    @ActivationConfigProperty(propertyName = "address", propertyValue = "inbound-address"),
                    @ActivationConfigProperty(propertyName = "clusterHost", propertyValue = "localhost"),
-                   @ActivationConfigProperty(propertyName = "clusterPort", propertyValue = "4041"),
+                   @ActivationConfigProperty(propertyName = "clusterPort", propertyValue = "0"),
                    })
 @ResourceAdapter("vertx-resource-adapter-0.0.1.rar")
 public class VertxMonitor implements VertxListener {
@@ -121,11 +121,11 @@ The configuration of outbound and inbound are same, they are:
      * Type: java.lang.Integer
      * Outbound / Inbound
      * <b>clusterPort</b> specifies which port the distributed event bus will be bound to. Default to 0, means random available port.
-   * <b>clusterConfiguratoinFile</b>
+   * <b>clusterConfigFile</b>
      * Type: java.lang.String
      * Outbound / Inbound
-     * <b>clusterConfiguratoinFile</b> specifies which cluster file will be used to join the vertx cluster. Default to 'cluster.xml'. 
-     The resource adapter ships a 'cluster.xml' inside the .rar file, which uses tcp-ip network join on '127.0.0.1'
+     * <b>clusterConfigFile</b> specifies which cluster file will be used to join the vertx cluster. Default to 'default-cluster.xml'. 
+     The resource adapter ships a 'default-cluster.xml' inside the .rar file, which uses tcp-ip network join on '127.0.0.1'
    * <b>timeout</b>
      * Type: java.lang.Long
      * Outbound / Inbound
@@ -154,14 +154,15 @@ The shipped .rar file contains an ironjacamar.xml file in 'META-INF/ironjacamar.
 			  <connection-definitions>
 			    <connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory">
 			      <config-property name="clusterHost">localhost</config-property>
-			      <config-property name="clusterPort">4041</config-property>
+			      <config-property name="clusterPort">0</config-property>
+			      <config-property name="clusterConfigFile">default-cluster.xml</config-property>
 			    </connection-definition>
 			  </connection-definitions>
 			
 			</ironjacamar>
 
 
-Build
+Build From Source
 -------
 
 It uses gradle for the building, change your current working directory to the codes, then run the command:
@@ -171,10 +172,9 @@ It uses gradle for the building, change your current working directory to the co
 It will generate the resource adapter file (.rar file) in the *build/libs/* directory.
 
 
-Where to get the binarary
+Maven Artifacts
 -------
 TODO
-There is no place to get the binarary yet, you can clone the code and build it from source.
 
 Examples
 -------
@@ -183,12 +183,6 @@ TODO
 Known Issues
 -------
 
-   * The packages of this resource adapter start with *org.vertx*, because it should be a main feature of Vert.x, but it does not get included yet, before that,
-    it is a problem to use that package names.
-
-   * This resource adapter uses it's own ClusterManagerFactory to be able to use different cluster files than 'cluster.xml' or/and 'default-cluster.xml',
- so you need to copy the vertx-resource-adapter.jar to &lt;Your Vertx Home&gt;/lib/ directory.
-
-   * There will be an exception when the resource adapter is undeployed if there is any Vert.x started up before, because there is no way to know the Vert.x is completed stopped yet.
+   * The resource adapter uses it's own ClusterManagerFactory to be able to use different cluster files than 'cluster.xml' or 'default-cluster.xml', so you need to copy the vertx-resource-adapter.jar to &lt;Your Vertx Home&gt;/lib/ directory before it can communicate with your Vertx platform.
 
 So Have fun!

@@ -24,6 +24,7 @@ package org.vertx.java.resourceadapter;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
@@ -49,7 +50,7 @@ import org.vertx.java.core.Vertx;
    connectionFactoryImpl = VertxConnectionFactoryImpl.class,
    connection = VertxConnection.class,
    connectionImpl = VertxConnectionImpl.class)
-public class VertxManagedConnectionFactory extends AbstractJcaBase  implements ManagedConnectionFactory, ResourceAdapterAssociation, VertxLifecycleListener
+public class VertxManagedConnectionFactory extends AbstractJcaBase implements ManagedConnectionFactory, ResourceAdapterAssociation, VertxPlatformFactory.VertxListener
 {
 
    /** The serial version UID */
@@ -109,17 +110,17 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
    public ManagedConnection createManagedConnection(Subject subject,
          ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
-      log.finest("createManagedConnection()");
-      VertxPlatformFactory.instance().createVertxIfNotStart(getVertxPlatformConfig(), this);
+      VertxPlatformConfiguration config = getVertxPlatformConfig();
+      VertxPlatformFactory.instance().createVertxIfNotStart(config, this);
       long current = System.currentTimeMillis();
       while (this.vertx == null)
       {
-         if (getTimeout() != null)
+         if (config.getTimeout() != null)
          {
             long now = System.currentTimeMillis();
-            if (now - current > getTimeout())
+            if (now - current > config.getTimeout())
             {
-               throw new ResourceException("No Vert.x starts up within timeout: " + getTimeout() + " milliseconds");
+               throw new ResourceException("No Vert.x starts up within timeout: " + config.getTimeout() + " milliseconds");
             }
          }
          try
@@ -131,21 +132,15 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase  implements M
             
          }
       }
+      log.log(Level.FINEST, "Creating a VertxManagedConnction with a Vertx platform.");
       return new VertxManagedConnection(this, vertx);
    }
    
    @Override
-   public void onCreate(Vertx vertx)
+   public void whenReady(Vertx vertx)
    {
       this.vertx = vertx;
    }
-   
-   @Override
-   public void onGet(Vertx vertx)
-   {
-      this.vertx = vertx;
-   }
-   
 
    /**
     * Returns a matched connection from the candidate set of connections. 

@@ -56,7 +56,7 @@ public abstract class AbstractJcaBase
    @ConfigProperty(defaultValue = "cluster.xml")
    public String getClusterConfigFile()
    {
-      return this.vertxPlatformConfig.getClusterConfiguratoinFile();
+      return this.vertxPlatformConfig.getClusterConfigFile();
    }
 
    /**
@@ -64,10 +64,10 @@ public abstract class AbstractJcaBase
     */
    public void setClusterConfigFile(String clusterConfigFile)
    {
-      this.vertxPlatformConfig.setClusterConfiguratoinFile(clusterConfigFile);
+      this.vertxPlatformConfig.setClusterConfigFile(clusterConfigFile);
    }
 
-   @ConfigProperty(defaultValue = "30000L")
+   @ConfigProperty(defaultValue = "30000")
    public Long getTimeout()
    {
       return this.vertxPlatformConfig.getTimeout();

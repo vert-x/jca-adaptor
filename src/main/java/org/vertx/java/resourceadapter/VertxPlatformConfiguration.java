@@ -24,7 +24,7 @@ public class VertxPlatformConfiguration implements Serializable
    
    private String clusterHost;
    
-   private String clusterConfiguratoinFile;
+   private String clusterConfigFile;
    
    /** Timeout in milliseconds waiting for the Vert.x starts up. Default to 30000, 30 seconds **/
    private Long timeout;
@@ -64,10 +64,10 @@ public class VertxPlatformConfiguration implements Serializable
       sb.append(getClusterHost());
       sb.append(":");
       sb.append(getClusterPort());
-      if (this.clusterConfiguratoinFile != null && this.clusterConfiguratoinFile.length() > 0)
+      if (this.clusterConfigFile != null && this.clusterConfigFile.length() > 0)
       {
          sb.append(":clusterFile[");
-         sb.append(this.clusterConfiguratoinFile);
+         sb.append(this.clusterConfigFile);
          sb.append("]");
       }
       return sb.toString();
@@ -110,18 +110,18 @@ public class VertxPlatformConfiguration implements Serializable
       this.clusterHost = clusterHost;
    }
    /**
-    * @return the clusterConfiguratoinFile
+    * @return the clusterConfigFile
     */
-   public String getClusterConfiguratoinFile()
+   public String getClusterConfigFile()
    {
-      return clusterConfiguratoinFile;
+      return clusterConfigFile;
    }
    /**
-    * @param clusterConfiguratoinFile the clusterConfiguratoinFile to set
+    * @param clusterConfigFile the clusterConfiguratoinFile to set
     */
-   public void setClusterConfiguratoinFile(String clusterConfiguratoinFile)
+   public void setClusterConfigFile(String clusterConfigFile)
    {
-      this.clusterConfiguratoinFile = clusterConfiguratoinFile;
+      this.clusterConfigFile = clusterConfigFile;
    }
 
    /* (non-Javadoc)
@@ -132,7 +132,7 @@ public class VertxPlatformConfiguration implements Serializable
    {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((clusterConfiguratoinFile == null) ? 0 : clusterConfiguratoinFile.hashCode());
+      result = prime * result + ((clusterConfigFile == null) ? 0 : clusterConfigFile.hashCode());
       result = prime * result + ((clusterHost == null) ? 0 : clusterHost.hashCode());
       result = prime * result + ((clusterPort == null) ? 0 : clusterPort.hashCode());
       result = prime * result + ((timeout == null) ? 0 : timeout.hashCode());
@@ -152,12 +152,12 @@ public class VertxPlatformConfiguration implements Serializable
       if (getClass() != obj.getClass())
          return false;
       VertxPlatformConfiguration other = (VertxPlatformConfiguration) obj;
-      if (clusterConfiguratoinFile == null)
+      if (clusterConfigFile == null)
       {
-         if (other.clusterConfiguratoinFile != null)
+         if (other.clusterConfigFile != null)
             return false;
       }
-      else if (!clusterConfiguratoinFile.equals(other.clusterConfiguratoinFile))
+      else if (!clusterConfigFile.equals(other.clusterConfigFile))
          return false;
       if (clusterHost == null)
       {

@@ -106,20 +106,14 @@ public class ConnectorTestCase
       
       VertxPlatformConfiguration config = new VertxPlatformConfiguration();
       config.setClusterHost("localhost");
-      config.setClusterPort(4041); // same configure as the ra
+      config.setClusterPort(0);
+      config.setClusterConfigFile("default-cluster.xml"); // same configure as the ra
       
       // Vertx has started already.
-      VertxPlatformFactory.instance().createVertxIfNotStart(config, new VertxLifecycleListener()
+      VertxPlatformFactory.instance().createVertxIfNotStart(config, new VertxPlatformFactory.VertxListener()
       {
-         
          @Override
-         public void onGet(Vertx vertx)
-         {
-            ConnectorTestCase.this.vertx = vertx;
-         }
-         
-         @Override
-         public void onCreate(Vertx vertx)
+         public void whenReady(Vertx vertx)
          {
             ConnectorTestCase.this.vertx = vertx;
          }

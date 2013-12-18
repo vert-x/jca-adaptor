@@ -62,13 +62,13 @@ public class VertxPlatformFactory
     * @param config the configuration to start a vertx
     * @param lifecyleListener the vertx lifecycle listener
     */
-   public synchronized void createVertxIfNotStart(final VertxPlatformConfiguration config, final VertxLifecycleListener lifecyleListener)
+   public synchronized void createVertxIfNotStart(final VertxPlatformConfiguration config, final VertxListener lifecyleListener)
    {
       Vertx vertx = this.vertxPlatforms.get(config.getVertxPlatformIdentifier());
       if (vertx != null)
       {
          log.log(Level.INFO, "Vert.x platform at: " + config.getVertxPlatformIdentifier() + " has been started.");
-         lifecyleListener.onGet(vertx);
+         lifecyleListener.whenReady(vertx);
          return;
       }
       Integer clusterPort = config.getClusterPort();
@@ -86,7 +86,7 @@ public class VertxPlatformFactory
       
       log.log(Level.INFO, "Starts a Vert.x platform at: " + config.getVertxPlatformIdentifier());
       
-      String clusterFile = config.getClusterConfiguratoinFile();
+      String clusterFile = config.getClusterConfigFile();
       if (clusterFile != null)
       {
          System.setProperty("vertx.ra.cluster.file", clusterFile);
@@ -104,7 +104,7 @@ public class VertxPlatformFactory
             {
                log.log(Level.INFO, "Vert.x Platform at: " + config.getVertxPlatformIdentifier() + " Started Successfully.");
                vertxPlatforms.putIfAbsent(config.getVertxPlatformIdentifier(), result.result());
-               lifecyleListener.onCreate(result.result());
+               lifecyleListener.whenReady(result.result());
             }
             else if (result.failed())
             {
@@ -205,7 +205,7 @@ public class VertxPlatformFactory
     * 
     * Clears all vertx holders.
     */
-   public synchronized void clear()
+   synchronized void clear()
    {
       for (Map.Entry<String, Vertx> entry: this.vertxPlatforms.entrySet())
       {
@@ -215,6 +215,17 @@ public class VertxPlatformFactory
       }
       this.vertxPlatforms.clear();
       this.vertxHolders.clear();
+   }
+   
+   public interface VertxListener
+   {
+
+      /**
+       * When vertx is ready, maybe just started, or have been started already.
+       * 
+       * @param vertx the Vert.x
+       */
+      void whenReady(Vertx vertx);
    }
    
 }

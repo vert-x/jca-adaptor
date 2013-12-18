@@ -21,6 +21,9 @@
  */
 package org.vertx.java.resourceadapter;
 
+import org.vertx.java.resourceadapter.inflow.VertxActivation;
+import org.vertx.java.resourceadapter.inflow.VertxActivationSpec;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -34,9 +37,6 @@ import javax.resource.spi.TransactionSupport;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-
-import org.vertx.java.resourceadapter.inflow.VertxActivation;
-import org.vertx.java.resourceadapter.inflow.VertxActivationSpec;
 
 /**
  * VertxResourceAdapter is the Resource Adapter used to interact with a Vert.x cluster.
@@ -139,7 +139,20 @@ public class VertxResourceAdapter implements ResourceAdapter, java.io.Serializab
    {
       log.finest("stop()");
       this.workManager = null;
+      this.activations.clear();
       VertxPlatformFactory.instance().clear();
+      
+      // it seems after stop() is called, 
+      // there are still some background threads running on vert.x
+      // waiting for 1 second
+      try
+      {
+         Thread.sleep(1000);
+      }
+      catch (InterruptedException e)
+      {
+         ;
+      }
    }
 
    /**
