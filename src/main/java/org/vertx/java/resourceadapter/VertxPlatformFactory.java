@@ -27,15 +27,11 @@ public class VertxPlatformFactory
    
    private static Logger log = Logger.getLogger(VertxPlatformFactory.class.getName());
    
-   private static VertxPlatformFactory instance;
+   private static VertxPlatformFactory INSTANCE = new VertxPlatformFactory();
    
-   public synchronized static VertxPlatformFactory instance()
+   public static VertxPlatformFactory instance()
    {
-      if (instance == null)
-      {
-         instance = new VertxPlatformFactory();
-      }
-      return instance;
+      return INSTANCE;
    }
    
    /**
@@ -217,6 +213,10 @@ public class VertxPlatformFactory
       this.vertxHolders.clear();
    }
    
+   /**
+    * The Listener to monitor whether the embedded vert.x runtime is ready.
+    *
+    */
    public interface VertxListener
    {
 
