@@ -7,7 +7,7 @@ import org.vertx.java.core.eventbus.Message;
 
 /**
  * 
- * Listener on the Vert.x message.
+ * MDB message listener interface for the Vert.x platform.
  * 
  * @author Lin Gao <lgao@redhat.com>
  *
