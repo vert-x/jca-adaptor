@@ -17,7 +17,7 @@ Outbound communication
 An application component like a web application(a .war), an ejb instance can send message to the Vertx cluster using outbound communication.
 
 Typical usage is try to get the <b>org.vertx.java.resourceadapter.VertxConnectionFactory</b> using a JNDI lookup, or inject the resource using CDI, 
-then gets one <b>org.vertx.java.resourceadapter.VertxConnection</b> instance, then you can get the <b>EventBus</b> or the <b>SharedData</b> which Vertx provides.
+then gets one <b>org.vertx.java.resourceadapter.VertxConnection</b> instance, then you can get the Vertx <b>EventBus</b> to send messages.
 
 <pre>
 
@@ -79,7 +79,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
                    @ActivationConfigProperty(propertyName = "clusterHost", propertyValue = "localhost"),
                    @ActivationConfigProperty(propertyName = "clusterPort", propertyValue = "0"),
                    })
-@ResourceAdapter("vertx-resource-adapter-0.0.1.rar")
+@ResourceAdapter("vertx-resource-adapter-1.0.1.rar")
 public class VertxMonitor implements VertxListener {
 
    private Logger logger = Logger.getLogger(VertxMonitor.class.getName());
@@ -124,7 +124,7 @@ The configuration of outbound and inbound are same, they are:
    * <b>clusterConfigFile</b>
      * Type: java.lang.String
      * Outbound / Inbound
-     * <b>clusterConfigFile</b> specifies which cluster file will be used to join the vertx cluster. Default to 'default-cluster.xml'. 
+     * <b>clusterConfigFile</b> specifies which cluster file will be used to join the vertx cluster. 'default-cluster.xml' shipped with the resource adapter will be used if it is not specified. It can be either a file absolute path, or a system property using expression like: '${cluster.config.file}'.
      The resource adapter ships a 'default-cluster.xml' inside the .rar file, which uses tcp-ip network join on '127.0.0.1'
    * <b>timeout</b>
      * Type: java.lang.Long
@@ -133,56 +133,53 @@ The configuration of outbound and inbound are same, they are:
    * <b>address</b>
      * Type: java.lang.String
      * Inbound Only
+     * Not null
      * <b>address</b> specifies in which vertx event bus address the Endpoint(MDB) listen.
 
 
-IronJacamar
+Credits to IronJacamar
 -------
 
 [IronJacamar](http://www.ironjacamar.org/) is the top lead JCA implementation in the industry, it supports JCA 1.0/1.5/1.6/1.7, and is adopted by [WildFly](http://www.wildfly.org/) application server.
    
-The shipped .rar file contains an ironjacamar.xml file in 'META-INF/ironjacamar.xml', which will active by default if you deploy it to a WildFly application server.
+This resource adapter uses IronJacamar as the development and test environment.
 
 
-			<ironjacamar xmlns="http://www.ironjacamar.org/doc/schema"
-			             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			             xsi:schemaLocation="http://www.ironjacamar.org/doc/schema 
-			             http://www.ironjacamar.org/doc/schema/ironjacamar_1_1.xsd">
-			             
-			  <transaction-support>NoTransaction</transaction-support>
-			  
-			  <connection-definitions>
-			    <connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory">
-			      <config-property name="clusterHost">localhost</config-property>
-			      <config-property name="clusterPort">0</config-property>
-			      <config-property name="clusterConfigFile">default-cluster.xml</config-property>
-			    </connection-definition>
-			  </connection-definitions>
-			
-			</ironjacamar>
-
-
-Build From Source
+Building
 -------
 
 It uses gradle for the building, change your current working directory to the codes, then run the command:
 
-> ./gradlew 
+> ./gradlew rar 
 
 It will generate the resource adapter file (.rar file) in the *build/libs/* directory.
 
 
-Maven Artifacts
+
+Deploy to Wildfly
 -------
-TODO
+Follow the steps below to deploy the resource adapter to WildFly application server:
+   * Build it from source or download from the [Bintary](https://bintray.com/gaol/downloads/vertx-resource-adapter)
+   * Starts the WildFly application server.
+      >> bin/standalone.sh -c standalone-full.xml
+   * Deploy the .rar file
+     >> bin/jboss-cli.sh --connect --command="deploy <PATH-TO-VERTX-RESOURCE-ADAPTER.rar>"
+   * Change the 'etc/wildfly-ra-sample.cli' according to your own settings
+      * Check the .rar file name
+      * Check the jndi name 
+      * Check the cluster configuration file path
+   * Enable the resource adapter
+    >> bin/jboss-cli.sh --connect --file=<PATH-TO-YOUR-wildfly-ra-sample.cli>
+
+Downloads
+-------
+You can download the resouce adapter from: [Bintary](https://bintray.com/gaol/downloads/vertx-resource-adapter)
 
 Examples
 -------
 TODO
 
-Known Issues
--------
 
-   * The resource adapter uses it's own ClusterManagerFactory to be able to use different cluster files than 'cluster.xml' or 'default-cluster.xml', so you need to copy the vertx-resource-adapter.jar to &lt;Your Vertx Home&gt;/lib/ directory before it can communicate with your Vertx platform.
+If you get any issues or suggestions, you are appreciated to share the idea by firing an issue [here](https://github.com/gaol/vertx-resource-adapter/issues/new)
 
-So Have fun!
+Have fun!

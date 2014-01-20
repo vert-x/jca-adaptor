@@ -1,0 +1,5 @@
+/subsystem=resource-adapters/resource-adapter=vertx-resource-adapter-1.0.1.rar/:add(archive=vertx-resource-adapter-1.0.1.rar,transaction-support=NoTransaction)
+/subsystem=resource-adapters/resource-adapter=vertx-resource-adapter-1.0.1.rar/config-properties=clusterTmpDir/:add(value=${jboss.server.data.dir})
+/subsystem=resource-adapters/resource-adapter=vertx-resource-adapter-1.0.1.rar/connection-definitions=VertxConnection/:add(class-name=org.vertx.java.resourceadapter.VertxManagedConnectionFactory,jndi-name=java:/eis/VertxConnectionFactory)
+/subsystem=resource-adapters/resource-adapter=vertx-resource-adapter-1.0.1.rar/connection-definitions=VertxConnection/config-properties=clusterConfigFile:add(value=/home/lgao/softwares/vertx/default/conf/cluster.xml)
+/subsystem=resource-adapters/resource-adapter=vertx-resource-adapter-1.0.1.rar:activate
