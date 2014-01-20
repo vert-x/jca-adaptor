@@ -66,8 +66,13 @@ public class VertxPlatformConfiguration implements Serializable
       sb.append(getClusterPort());
       if (this.clusterConfigFile != null && this.clusterConfigFile.length() > 0)
       {
+         String clusterFileID = this.clusterConfigFile;
+         if (SecurityActions.isExpression(clusterFileID))
+         {
+            clusterFileID = SecurityActions.getExpressValue(clusterFileID);
+         }
          sb.append(":clusterFile[");
-         sb.append(this.clusterConfigFile);
+         sb.append(clusterFileID);
          sb.append("]");
       }
       return sb.toString();

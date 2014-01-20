@@ -21,6 +21,7 @@
  */
 package org.vertx.java.resourceadapter.inflow;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.resource.spi.Activation;
@@ -47,8 +48,6 @@ public class VertxActivationSpec extends AbstractJcaBase implements ActivationSp
    /** The resource adapter */
    private ResourceAdapter ra;
    
-   @NotNull
-   @ConfigProperty
    private String address;
    
 
@@ -63,6 +62,8 @@ public class VertxActivationSpec extends AbstractJcaBase implements ActivationSp
    /**
     * @param address the address to set
     */
+   @NotNull
+   @ConfigProperty
    public void setAddress(String address)
    {
       this.address = address;
@@ -85,7 +86,14 @@ public class VertxActivationSpec extends AbstractJcaBase implements ActivationSp
    public void validate() throws InvalidPropertyException
    {
       log.finest("validate()");
-
+      if (this.address == null || this.address.length() == 0)
+      {
+         throw new InvalidPropertyException("Address must be specified.");
+      }
+      if (this.getClusterConfigFile() == null || this.getClusterConfigFile().length() == 0)
+      {
+         log.log(Level.WARNING, "Cluster configuration file is not specified, Will use default-cluster.xml provided by the resource adapter.");
+      }
    }
 
    /**

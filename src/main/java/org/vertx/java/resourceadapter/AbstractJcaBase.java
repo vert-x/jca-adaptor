@@ -19,7 +19,6 @@ public abstract class AbstractJcaBase
    /**
     * @return the clusterPort
     */
-   @ConfigProperty(defaultValue = "0")
    public Integer getClusterPort()
    {
       return this.vertxPlatformConfig.getClusterPort();
@@ -28,6 +27,7 @@ public abstract class AbstractJcaBase
    /**
     * @param clusterPort the clusterPort to set
     */
+   @ConfigProperty
    public void setClusterPort(Integer clusterPort)
    {
       this.vertxPlatformConfig.setClusterPort(clusterPort);
@@ -36,7 +36,6 @@ public abstract class AbstractJcaBase
    /**
     * @return the clusterHost
     */
-   @ConfigProperty(defaultValue = "localhost")
    public String getClusterHost()
    {
       return this.vertxPlatformConfig.getClusterHost();
@@ -45,6 +44,7 @@ public abstract class AbstractJcaBase
    /**
     * @param clusterHost the clusterHost to set
     */
+   @ConfigProperty(defaultValue = "localhost")
    public void setClusterHost(String clusterHost)
    {
       this.vertxPlatformConfig.setClusterHost(clusterHost);
@@ -53,7 +53,7 @@ public abstract class AbstractJcaBase
    /**
     * @return the clusterConfigFile
     */
-   @ConfigProperty(defaultValue = "cluster.xml")
+   
    public String getClusterConfigFile()
    {
       return this.vertxPlatformConfig.getClusterConfigFile();
@@ -62,17 +62,19 @@ public abstract class AbstractJcaBase
    /**
     * @param clusterConfigFile the clusterConfigFile to set
     */
+   @ConfigProperty
    public void setClusterConfigFile(String clusterConfigFile)
    {
       this.vertxPlatformConfig.setClusterConfigFile(clusterConfigFile);
    }
 
-   @ConfigProperty(defaultValue = "30000")
+   
    public Long getTimeout()
    {
       return this.vertxPlatformConfig.getTimeout();
    }
    
+   @ConfigProperty(defaultValue = "30000")
    public void setTimeout(Long timeout)
    {
       this.vertxPlatformConfig.setTimeout(timeout);
