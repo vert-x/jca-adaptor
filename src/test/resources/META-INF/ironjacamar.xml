@@ -33,7 +33,6 @@
     <connection-definition class-name="org.vertx.java.resourceadapter.VertxManagedConnectionFactory" jndi-name="java:/eis/VertxConnectionFactory" pool-name="VertxConnectionFactory">
       <config-property name="clusterHost">localhost</config-property>
       <config-property name="clusterPort">0</config-property>
-      <config-property name="clusterConfigFile">default-cluster.xml</config-property>
     </connection-definition>
   </connection-definitions>
 
