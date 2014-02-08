@@ -1,0 +1,78 @@
+apply plugin: 'eclipse'
+
+defaultTasks 'rar'
+
+configurations {
+   compile {
+      transitive = true
+   }
+   provided
+}
+
+sourceSets {
+  main {
+    compileClasspath = compileClasspath + configurations.provided
+  }
+}
+
+dependencies {
+  provided "javax.validation:validation-api:$validationVersion"
+  provided "org.jboss.ironjacamar:ironjacamar-spec-api:$ijVersion"
+  compile "io.vertx:vertx-core:$vertxVersion"
+  compile "io.vertx:vertx-platform:$vertxVersion"
+  compile "com.hazelcast:hazelcast:$hazelcastVersion"
+  runtime "io.vertx:vertx-hazelcast:$vertxVersion"
+  testCompile "io.vertx:testtools:$toolsVersion"
+  testCompile "io.vertx:vertx-testsuite:$testsuiteVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded-byteman:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-common-api:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-common-impl:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-common-spi:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-core-api:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-core-impl:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-depchain:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-deployers-common:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-deployers-fungal:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-embedded:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-test-eis:$ijVersion"
+  testCompile "org.jboss.ironjacamar:ironjacamar-validator:$ijVersion"
+  testCompile "junit:junit:$junitVersion"
+  testCompile files("${System.properties['java.home']}/../lib/tools.jar") 
+}
+
+javadoc {
+  source = sourceSets.main.allJava
+  classpath = sourceSets.main.compileClasspath + configurations.provided
+}
+
+task sourceJar(type: Jar) {
+  description = 'Builds a source jar artifact suitable for maven deployment.'
+  classifier = 'sources'
+  from sourceSets.main.java
+}
+
+task javadocJar(type: Jar) {
+  description = 'Builds a javadoc jar artifact suitable for maven deployment.'
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+javadocJar.dependsOn javadoc
+
+build.dependsOn sourceJar, javadocJar
+
+artifacts {
+  archives sourceJar, javadocJar
+}
+
+
+task rar( type: Zip, dependsOn: 'build', description: 'Package the resource adapter .rar file') {
+  group = 'JCA'
+  description = "Assembles a resource adapter .rar file"
+  destinationDir = project.file('build/libs')
+  archiveName = "${modname}-${version}.rar"
+  from configurations.runtime
+  from "build/libs/${project.name}-${version}.jar"
+}
+
+test.onlyIf {!project.hasProperty("skipTest")}

@@ -1,0 +1,14 @@
+
+apply plugin: 'war'
+
+dependencies {
+  compile project(':ra')
+}
+
+war {
+  manifest {
+    attributes(
+      "Dependencies": "deployment.${modname}-${version}.rar meta-inf"
+    )
+  }
+}

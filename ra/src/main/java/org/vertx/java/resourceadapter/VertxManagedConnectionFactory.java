@@ -174,6 +174,41 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase implements Ma
       return result;
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((vertx == null) ? 0 : vertx.hashCode());
+      return result;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (!super.equals(obj))
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      VertxManagedConnectionFactory other = (VertxManagedConnectionFactory) obj;
+      if (vertx == null)
+      {
+         if (other.vertx != null)
+            return false;
+      }
+      else if (!vertx.equals(other.vertx))
+         return false;
+      return true;
+   }
+
    /**
     * Get the log writer for this ManagedConnectionFactory instance.
     *
@@ -220,29 +255,5 @@ public class VertxManagedConnectionFactory extends AbstractJcaBase implements Ma
       this.ra = ra;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
-   @Override
-   public int hashCode()
-   {
-      return super.hashCode();
-   }
-
-   /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if (!super.equals(obj))
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      VertxManagedConnectionFactory other = (VertxManagedConnectionFactory) obj;
-      return super.equals(other);
-   }
 
 }

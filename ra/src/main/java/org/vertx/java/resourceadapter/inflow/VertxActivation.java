@@ -176,9 +176,9 @@ public class VertxActivation implements VertxPlatformFactory.VertxListener, Vert
          return;
       }
       this.vertx = vertx;
-      VertxPlatformFactory.instance().addVertxHolder(this);
       setup();
       deliveryActive.set(true);
+      VertxPlatformFactory.instance().addVertxHolder(this);
    }
    
    @Override

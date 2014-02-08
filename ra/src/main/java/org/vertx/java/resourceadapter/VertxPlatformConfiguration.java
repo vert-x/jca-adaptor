@@ -57,24 +57,27 @@ public class VertxPlatformConfiguration implements Serializable
       }
       return sb.toString();
    }
-      
+   
+   /**
+    * Currently only for host:port keypair.
+    */
    public String getVertxPlatformIdentifier()
    {
       StringBuilder sb = new StringBuilder();
       sb.append(getClusterHost());
       sb.append(":");
       sb.append(getClusterPort());
-      if (this.clusterConfigFile != null && this.clusterConfigFile.length() > 0)
-      {
-         String clusterFileID = this.clusterConfigFile;
-         if (SecurityActions.isExpression(clusterFileID))
-         {
-            clusterFileID = SecurityActions.getExpressValue(clusterFileID);
-         }
-         sb.append(":clusterFile[");
-         sb.append(clusterFileID);
-         sb.append("]");
-      }
+//      if (this.clusterConfigFile != null && this.clusterConfigFile.length() > 0)
+//      {
+//         String clusterFileID = this.clusterConfigFile;
+//         if (SecurityActions.isExpression(clusterFileID))
+//         {
+//            clusterFileID = SecurityActions.getExpressValue(clusterFileID);
+//         }
+//         sb.append(":clusterFile[");
+//         sb.append(clusterFileID);
+//         sb.append("]");
+//      }
       return sb.toString();
    }
   

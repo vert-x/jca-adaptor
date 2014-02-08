@@ -29,7 +29,6 @@ import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
-import javax.validation.constraints.NotNull;
 
 import org.vertx.java.resourceadapter.AbstractJcaBase;
 
@@ -62,7 +61,6 @@ public class VertxActivationSpec extends AbstractJcaBase implements ActivationSp
    /**
     * @param address the address to set
     */
-   @NotNull
    @ConfigProperty
    public void setAddress(String address)
    {

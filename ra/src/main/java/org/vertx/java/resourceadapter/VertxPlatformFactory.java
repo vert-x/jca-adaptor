@@ -62,6 +62,8 @@ public class VertxPlatformFactory
    
    private Lock lock = new ReentrantLock();
    
+   private Lock holderLock = new ReentrantLock();
+   
    /**
     * Default private constructor
     */
@@ -109,7 +111,7 @@ public class VertxPlatformFactory
          String clusterHost = config.getClusterHost();
          if (clusterHost == null || clusterHost.length() == 0)
          {
-            log.log(Level.INFO, "Cluster Host is not set, use '127.0.0.1' by default.");
+            log.log(Level.INFO, "Cluster Host is not set, use 'localhost' by default.");
             clusterHost = "localhost";
          }
          if (clusterPort == null)
@@ -268,7 +270,7 @@ public class VertxPlatformFactory
     */
    public void addVertxHolder(VertxHolder holder)
    {
-      lock.lock();
+      holderLock.lock();
       try
       {
          Vertx vertx = holder.getVertx();
@@ -291,7 +293,7 @@ public class VertxPlatformFactory
       }
       finally
       {
-         lock.unlock();
+         holderLock.unlock();
       }
    }
    
@@ -302,7 +304,7 @@ public class VertxPlatformFactory
     */
    public void removeVertxHolder(VertxHolder holder)
    {
-      lock.lock();
+      holderLock.lock();
       try
       {
          if (this.vertxHolders.contains(holder))
@@ -317,7 +319,7 @@ public class VertxPlatformFactory
       }
       finally
       {
-         lock.unlock();
+         holderLock.unlock();
       }
    }
    
@@ -340,7 +342,7 @@ public class VertxPlatformFactory
                return;
             }
             log.log(Level.INFO, "Stops the Vert.x platform at: " + config.getVertxPlatformIdentifier());
-            this.vertxPlatforms.remove(config);
+            this.vertxPlatforms.remove(config.getVertxPlatformIdentifier());
             vertx.stop();
          }
          else
@@ -401,6 +403,8 @@ public class VertxPlatformFactory
 
       /**
        * When vertx is ready, maybe just started, or have been started already.
+       * 
+       * NOTE: can't call vertxPlatforms related methods within this callback method, which will cause infinite waiting. 
        * 
        * @param vertx the Vert.x
        */
