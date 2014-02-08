@@ -48,14 +48,14 @@ finally
 }
 </pre>
 
-   * NOTE: always call *org.vertx.java.resourceadapter.VertxConnection.close()* when you does not need the connection anymore, otherwise the connection pool will be full very soon.
+   * NOTE: always call <b>org.vertx.java.resourceadapter.VertxConnection.close()</b> when you does not need the connection anymore, otherwise the connection pool will be full very soon.
 
 Inbound communication
 ------
 
 Usually a MDB is the client which receives inbound communication from a Vert.x cluster.
 
-The end point of the MDB implements interface: *org.vertx.java.resourceadapter.inflow.VertxListener*.
+The end point of the MDB implements interface: <b>org.vertx.java.resourceadapter.inflow.VertxListener</b>.
 
 <pre>
 
@@ -79,7 +79,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
                    @ActivationConfigProperty(propertyName = "clusterHost", propertyValue = "localhost"),
                    @ActivationConfigProperty(propertyName = "clusterPort", propertyValue = "0"),
                    })
-@ResourceAdapter("vertx-resource-adapter-1.0.1.rar")
+@ResourceAdapter("vertx-resource-adapter-1.0.2.rar")
 public class VertxMonitor implements VertxListener {
 
    private Logger logger = Logger.getLogger(VertxMonitor.class.getName());
@@ -106,17 +106,17 @@ public class VertxMonitor implements VertxListener {
 </pre>
 
 
-Now, you can send a message in your Vert.x runtime to address: 'inbound-address', and the MDB will get notified.
+Now, you can send a message in your Vert.x runtime to address: <b>inbound-address</b>, and the MDB will get notified.
 
 Configuration
 -------
 
-The configuration of outbound and inbound are same, they are:
+The configuration of outbound and inbound are almost the same, they are:
 
    * <b>clusterHost</b>
      * Type: java.lang.String
      * Outbound / Inbound
-     * <b>clusterHost</b> specifies which network interface the distributed event bus will be bound to. Default to 'localhost'.
+     * <b>clusterHost</b> specifies which network interface the distributed event bus will be bound to. Default to <b>localhost</b>.
    * <b>clusterPort</b>
      * Type: java.lang.Integer
      * Outbound / Inbound
@@ -124,7 +124,7 @@ The configuration of outbound and inbound are same, they are:
    * <b>clusterConfigFile</b>
      * Type: java.lang.String
      * Outbound / Inbound
-     * <b>clusterConfigFile</b> specifies which cluster file will be used to join the vertx cluster. 'default-cluster.xml' shipped with the resource adapter will be used if it is not specified. It can be either a file absolute path, or a system property using expression like: '${cluster.config.file}'.
+     * <b>clusterConfigFile</b> specifies which cluster file will be used to join the vertx cluster. <b>default-cluster.xml</b> shipped with the resource adapter will be used if it is not specified. It can be either a file absolute path, or a system property using expression like: '${cluster.config.file}'.
      The resource adapter ships a 'default-cluster.xml' inside the .rar file, which uses tcp-ip network join on '127.0.0.1'
    * <b>timeout</b>
      * Type: java.lang.Long
@@ -150,26 +150,28 @@ Building
 
 It uses gradle for the building, change your current working directory to the codes, then run the command:
 
-> ./gradlew rar 
+> ./gradlew clean rar 
 
-It will generate the resource adapter file (.rar file) in the *build/libs/* directory.
+It will generate the resource adapter file (.rar file) in the <b>ra/build/libs/</b> directory.
 
+If you want to build the examples, run the command:
 
+> ./gradlew clean build -Dexamples
 
 Deploy to Wildfly
 -------
 Follow the steps below to deploy the resource adapter to WildFly application server:
+
    * Build it from source or download from the [Bintary](https://bintray.com/gaol/downloads/vertx-resource-adapter)
+
    * Starts the WildFly application server.
-      >> bin/standalone.sh -c standalone-full.xml
+
+> WILDFLY-HOME/bin/standalone.sh -c standalone-full.xml
+
    * Deploy the .rar file
-     >> bin/jboss-cli.sh --connect --command="deploy <PATH-TO-VERTX-RESOURCE-ADAPTER.rar>"
-   * Change the 'etc/wildfly-ra-sample.cli' according to your own settings
-      * Check the .rar file name
-      * Check the jndi name 
-      * Check the cluster configuration file path
-   * Enable the resource adapter
-    >> bin/jboss-cli.sh --connect --file=<PATH-TO-YOUR-wildfly-ra-sample.cli>
+
+> WILDFLY-HOME/bin/jboss-cli.sh --connect --command="deploy ra/build/libs/vertx-resource-adapter-1.0.2.rar"
+> WILDFLY-HOME/bin/jboss-cli.sh --connect --file=build/etc/wildfly-ra-sample.cli
 
 Downloads
 -------
@@ -177,7 +179,8 @@ You can download the resouce adapter from: [Bintary](https://bintray.com/gaol/do
 
 Examples
 -------
-TODO
+For examples, please refer to this [document](https://github.com/gaol/vertx-resource-adapter/wiki/How-vertx-communicates-with-WildFly%3F)
+
 
 
 If you get any issues or suggestions, you are appreciated to share the idea by firing an issue [here](https://github.com/gaol/vertx-resource-adapter/issues/new)
