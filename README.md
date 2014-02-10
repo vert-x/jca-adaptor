@@ -179,7 +179,7 @@ You can download the resouce adapter from: [Bintary](https://bintray.com/gaol/do
 
 Examples
 -------
-For examples, please refer to this [document](https://github.com/gaol/vertx-resource-adapter/wiki/How-vertx-communicates-with-WildFly%3F)
+For examples, please refer to this [document](https://github.com/gaol/vertx-resource-adapter/wiki/Vertx-Resource-Adapter-Example/)
 
 
 
