@@ -8,6 +8,10 @@ task filter(type: Copy) {
 
 build.dependsOn filter
 
+
+install.enabled = false
+jar.enabled = false
+
 subprojects {
   apply plugin: 'java'
   apply plugin: 'maven'

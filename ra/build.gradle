@@ -2,6 +2,7 @@ apply plugin: 'eclipse'
 
 defaultTasks 'rar'
 
+
 configurations {
    compile {
       transitive = true
@@ -65,6 +66,15 @@ artifacts {
   archives sourceJar, javadocJar
 }
 
+jar.baseName = "${modname}"
+javadocJar.baseName = "${modname}"
+sourceJar.baseName = "${modname}"
+
+install {
+  repositories.mavenInstaller {
+    pom.artifactId = "${modname}"
+  }
+}
 
 task rar( type: Zip, dependsOn: 'build', description: 'Package the resource adapter .rar file') {
   group = 'JCA'
@@ -72,7 +82,7 @@ task rar( type: Zip, dependsOn: 'build', description: 'Package the resource adap
   destinationDir = project.file('build/libs')
   archiveName = "${modname}-${version}.rar"
   from configurations.runtime
-  from "build/libs/${project.name}-${version}.jar"
+  from "build/libs/${modname}-${version}.jar"
 }
 
 test.onlyIf {!project.hasProperty("skipTest")}
