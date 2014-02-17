@@ -175,7 +175,7 @@ Follow the steps below to deploy the resource adapter to WildFly application ser
 
 Jenkins
 ------
-Built on CloudBees: [![Build on CloudBees](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](https://vertx-resource-adapter.ci.cloudbees.com/)
+[![Build on CloudBees](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](https://vertx-resource-adapter.ci.cloudbees.com/)
 
 Downloads
 -------
