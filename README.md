@@ -173,6 +173,10 @@ Follow the steps below to deploy the resource adapter to WildFly application ser
 > WILDFLY-HOME/bin/jboss-cli.sh --connect --command="deploy ra/build/libs/vertx-resource-adapter-1.0.2.rar"
 > WILDFLY-HOME/bin/jboss-cli.sh --connect --file=build/etc/wildfly-ra-sample.cli
 
+Jenkins
+------
+Built on CloudBees: [![Build on CloudBees](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](https://vertx-resource-adapter.ci.cloudbees.com/)
+
 Downloads
 -------
 You can download the resouce adapter from: [Bintary](https://bintray.com/gaol/downloads/vertx-resource-adapter)
