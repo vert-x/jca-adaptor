@@ -2,7 +2,6 @@ apply plugin: 'eclipse'
 
 defaultTasks 'rar'
 
-
 configurations {
    compile {
       transitive = true
@@ -20,11 +19,9 @@ dependencies {
   provided "javax.validation:validation-api:$validationVersion"
   provided "org.jboss.ironjacamar:ironjacamar-spec-api:$ijVersion"
   compile "io.vertx:vertx-core:$vertxVersion"
-  compile "io.vertx:vertx-platform:$vertxVersion"
-  compile "com.hazelcast:hazelcast:$hazelcastVersion"
+  runtime "com.hazelcast:hazelcast:$hazelcastVersion"
   runtime "io.vertx:vertx-hazelcast:$vertxVersion"
-  testCompile "io.vertx:testtools:$toolsVersion"
-  testCompile "io.vertx:vertx-testsuite:$testsuiteVersion"
+  testCompile "io.vertx:vertx-platform:$vertxVersion"
   testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded:$ijVersion"
   testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded-byteman:$ijVersion"
   testCompile "org.jboss.ironjacamar:ironjacamar-common-api:$ijVersion"
