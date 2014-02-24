@@ -187,6 +187,6 @@ For examples, please refer to this [document](https://github.com/gaol/vertx-reso
 
 
 
-If you get any issues or suggestions, you are appreciated to share the idea by firing an issue [here](https://github.com/gaol/vertx-resource-adapter/issues/new)
+If you get any issues or suggestions, you are appreciated to share the idea by firing an issue [here](https://github.com/vert-x/jca-adaptor/issues/new)
 
 Have fun!
