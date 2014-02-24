@@ -26,8 +26,6 @@ def cpSeparator = System.getProperty("path.separator")
 // a shared Maven local and using Gradle wrapper concurrently
 loadProperties("${System.getProperty('user.home')}/.gradle/gradle.properties")
 
-apply from: "gradle/maven.gradle"
-
 configurations {
   provided 
   testCompile.extendsFrom provided

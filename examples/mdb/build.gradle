@@ -5,6 +5,9 @@ configurations {
    provided
 }
 
+uploadArchives.enabled = false
+install.enabled = false
+
 sourceSets {
   main {
     compileClasspath = compileClasspath + configurations.provided

@@ -1,6 +1,9 @@
 
 apply plugin: 'war'
 
+uploadArchives.enabled = false
+install.enabled = false
+
 dependencies {
   compile project(':ra')
 }

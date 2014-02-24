@@ -1,4 +1,5 @@
 apply plugin: 'eclipse'
+apply plugin: 'signing'
 
 defaultTasks 'rar'
 
@@ -59,7 +60,7 @@ javadocJar.dependsOn javadoc
 build.dependsOn sourceJar, javadocJar
 
 artifacts {
-  archives sourceJar, javadocJar
+  archives sourceJar, javadocJar, file("build/libs/${modname}-${version}.rar")
 }
 
 jar.baseName = "${modname}"
@@ -68,7 +69,7 @@ sourceJar.baseName = "${modname}"
 
 install {
   repositories.mavenInstaller {
-    pom.artifactId = "${modname}"
+    configurePom(pom)
   }
 }
 
@@ -82,3 +83,90 @@ task rar( type: Zip, dependsOn: 'build', description: 'Package the resource adap
 }
 
 test.onlyIf {!project.hasProperty("skipTest")}
+
+install.dependsOn rar
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// maven task configuration
+
+if (!hasProperty('sonatypeUsername')) {
+	ext.sonatypeUsername = ''
+}
+if (!hasProperty('sonatypePassword')) {
+	ext.sonatypePassword = ''
+}
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+signing {
+	required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+	sign configurations.archives
+}
+
+uploadArchives {
+	group 'build'
+	description = "Does a maven deploy of archives artifacts"
+
+	repositories {
+		mavenDeployer {
+                        // setUniqueVersion(false)
+
+			configuration = configurations.archives
+
+			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+
+			snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+
+			if (isReleaseVersion) {
+				beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+			}
+
+			configurePom(pom)
+		}
+	}
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// configuration methods
+
+def configurePom(def pom) {
+  pom.project {
+    name "Vertx JCA Adaptor"
+    description 'JCA Resource Adaptor used to communicate between Vert.x and JavaEE application server'
+    inceptionYear '2013'
+    packaging "rar"
+
+    properties {
+      setProperty('project.build.sourceEncoding', 'UTF8')
+    }
+
+    url 'https://github.com/vert-x/jca-adaptor'
+
+    developers {
+      developer {
+        id 'gaol'
+        name 'Lin Gao'
+        email 'aoingl@gmail.com'
+      }
+    }
+
+    scm {
+      url 'https://github.com/vert-x/jca-adaptor'
+      connection 'scm:git:git@github.com:vert-x/jca-adaptor.git'
+      developerConnection 'scm:git:git@github.com:vert-x/jca-adaptor.git'
+    }
+
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+
+  }
+}

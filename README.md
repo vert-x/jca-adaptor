@@ -1,7 +1,7 @@
-vertx-resource-adapter
+JCA Resource Adaptor for Vert.x
 ======================
 
-JCA Adapter for Vertx to interaction between JavaEE application server and Vertx cluster.
+JCA Adaptor for Vertx to interaction between JavaEE application server and Vertx cluster.
 
 Overview
 ------
@@ -79,7 +79,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
                    @ActivationConfigProperty(propertyName = "clusterHost", propertyValue = "localhost"),
                    @ActivationConfigProperty(propertyName = "clusterPort", propertyValue = "0"),
                    })
-@ResourceAdapter("vertx-resource-adapter-1.0.2.rar")
+@ResourceAdapter("jca-adaptor-1.0.3.rar")
 public class VertxMonitor implements VertxListener {
 
    private Logger logger = Logger.getLogger(VertxMonitor.class.getName());
@@ -170,7 +170,7 @@ Follow the steps below to deploy the resource adapter to WildFly application ser
 
    * Deploy the .rar file
 
-> WILDFLY-HOME/bin/jboss-cli.sh --connect --command="deploy ra/build/libs/vertx-resource-adapter-1.0.2.rar"
+> WILDFLY-HOME/bin/jboss-cli.sh --connect --command="deploy ra/build/libs/jca-adaptor-1.0.3.rar"
 > WILDFLY-HOME/bin/jboss-cli.sh --connect --file=build/etc/wildfly-ra-sample.cli
 
 Jenkins

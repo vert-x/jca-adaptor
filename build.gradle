@@ -9,14 +9,14 @@ task filter(type: Copy) {
 build.dependsOn filter
 
 
-install.enabled = false
+uploadArchives.enabled = false
 jar.enabled = false
 
 subprojects {
   apply plugin: 'java'
   apply plugin: 'maven'
 
-  group = 'org.vertx.java.resourceadapter'
+  group = "${modowner}"
   sourceCompatibility = '1.7'
   targetCompatibility = '1.7'
 
@@ -43,41 +43,3 @@ subprojects {
 
 }
 
-/*
-If you're uploading stuff to Maven, Gradle needs to generate a POM.
-Please edit the details below.
- */
-def configurePom(def pom) {
-  pom.project {
-    name rootProject.name
-    description 'Vertx Resource Adapter'
-    inceptionYear '2013'
-    packaging 'rar'
-
-    url 'https://github.com/gaol/vertx-resource-adapter'
-
-    developers {
-      developer {
-        id 'gaol'
-        name 'Lin Gao'
-        email 'aoingl@gmail.com'
-      }
-    }
-
-    scm {
-      url 'git@github.com:gaol/vertx-resource-adapter.git'
-    }
-
-    licenses {
-      license {
-        name 'The Apache Software License, Version 2.0'
-        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-        distribution 'repo'
-      }
-    }
-
-    properties {
-      setProperty('project.build.sourceEncoding', 'UTF8')
-    }
-  }
-}
