@@ -11,6 +11,28 @@ distributed event bus and shared data as JCA components.
 
 It supports both outbound and inbound vertx communication. 
 
+
+Maven Dependency
+------
+
+Maven dependency of this adapter:
+
+<pre>
+
+  <dependency>
+    <groupId>io.vertx</groupId>
+    <artifactId>jca-adaptor</artifactId>
+    <version>1.0.3</version>
+  </dependency>
+  <dependency>
+    <groupId>io.vertx</groupId>
+    <artifactId>jca-adaptor</artifactId>
+    <version>1.0.3</version>
+    <type>rar</type>
+  </dependency>
+
+</pre>
+
 Outbound communication
 ------
 
