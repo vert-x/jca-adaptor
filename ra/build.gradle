@@ -60,7 +60,7 @@ javadocJar.dependsOn javadoc
 build.dependsOn sourceJar, javadocJar
 
 artifacts {
-  archives sourceJar, javadocJar, file("build/libs/${modname}-${version}.rar")
+  archives sourceJar, javadocJar
 }
 
 jar.baseName = "${modname}"
@@ -167,6 +167,10 @@ def configurePom(def pom) {
         distribution 'repo'
       }
     }
-
+  }
+  pom.withXml { root ->
+    def children = root.asNode().children()
+    def versionIndex = children.indexOf(children.find {it.name().localPart == 'version'})
+    children.add(versionIndex + 1, new Node(null, 'packaging', 'rar'))
   }
 }
