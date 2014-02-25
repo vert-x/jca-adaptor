@@ -59,32 +59,28 @@ javadocJar.dependsOn javadoc
 
 build.dependsOn sourceJar, javadocJar
 
-artifacts {
-  archives sourceJar, javadocJar
-}
-
 jar.baseName = "${modname}"
 javadocJar.baseName = "${modname}"
 sourceJar.baseName = "${modname}"
 
-install {
-  repositories.mavenInstaller {
-    configurePom(pom)
-  }
-}
-
-task rar( type: Zip, dependsOn: 'build', description: 'Package the resource adapter .rar file') {
+task rar( type: Zip, dependsOn: 'jar', description: 'Package the resource adapter .rar file') {
   group = 'JCA'
   description = "Assembles a resource adapter .rar file"
   destinationDir = project.file('build/libs')
   archiveName = "${modname}-${version}.rar"
+  extension = "rar"
   from configurations.runtime
   from "build/libs/${modname}-${version}.jar"
 }
 
-test.onlyIf {!project.hasProperty("skipTest")}
+artifacts {
+  archives rar
+  archives jar
+  archives sourceJar
+  archives javadocJar
+}
 
-install.dependsOn rar
+test.onlyIf {!project.hasProperty("skipTest")}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // maven task configuration
@@ -97,6 +93,35 @@ if (!hasProperty('sonatypePassword')) {
 }
 
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+import org.gradle.api.tasks.Upload
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.allTasks.any { (it instanceof Upload) && it.name == 'uploadArchives' }) {
+        if (isReleaseVersion) {
+          Console console = System.console()
+          console.printf "\n\nWe have to sign the artifacts to upload to Sonatype Maven repository.\n\nPlease enter your signing details below.\n\n"
+
+          def id = console.readLine("PGP Key Id: ")
+          def file = console.readLine("PGP Secret Key Ring File (absolute path): ")
+          def password = console.readPassword("PGP Private Key Password: ")
+          allprojects { ext."signing.keyId" = id }
+          allprojects { ext."signing.secretKeyRingFile" = file }
+          allprojects { ext."signing.password" = password }
+
+          console.printf "\nThanks.\n\n"
+
+        }
+    }
+}
+
+
+install {
+  repositories.mavenInstaller {
+    configurePom(pom)
+  }
+}
+install.dependsOn rar
 
 signing {
 	required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
@@ -130,6 +155,7 @@ uploadArchives {
 	}
 }
 
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // configuration methods
 
@@ -138,7 +164,6 @@ def configurePom(def pom) {
     name "Vertx JCA Adaptor"
     description 'JCA Resource Adaptor used to communicate between Vert.x and JavaEE application server'
     inceptionYear '2013'
-    packaging "rar"
 
     properties {
       setProperty('project.build.sourceEncoding', 'UTF8')
@@ -171,6 +196,6 @@ def configurePom(def pom) {
   pom.withXml { root ->
     def children = root.asNode().children()
     def versionIndex = children.indexOf(children.find {it.name().localPart == 'version'})
-    children.add(versionIndex + 1, new Node(null, 'packaging', 'rar'))
+    children.add(versionIndex + 1, new Node(null, 'packaging', 'jar'))
   }
 }
