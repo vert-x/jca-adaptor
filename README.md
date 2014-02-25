@@ -19,17 +19,17 @@ Maven dependency of this adapter:
 
 <pre>
 
-  <dependency>
-    <groupId>io.vertx</groupId>
-    <artifactId>jca-adaptor</artifactId>
-    <version>1.0.3</version>
-  </dependency>
-  <dependency>
-    <groupId>io.vertx</groupId>
-    <artifactId>jca-adaptor</artifactId>
-    <version>1.0.3</version>
-    <type>rar</type>
-  </dependency>
+  &lt;dependency&gt;
+    &lt;groupId&gt;io.vertx&lt;/groupId&gt;
+    &lt;artifactId&gt;jca-adaptor&lt;/artifactId&gt;
+    &lt;version&gt;1.0.3&lt;/version&gt;
+  &lt;/dependency&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;io.vertx&lt;/groupId&gt;
+    &lt;artifactId&gt;jca-adaptor&lt;/artifactId&gt;
+    &lt;version&gt;1.0.3&lt;/version&gt;
+    &lt;type&gt;rar&lt;/type&gt;
+  &lt;/dependency&gt;
 
 </pre>
 
