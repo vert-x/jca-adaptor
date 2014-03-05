@@ -8,15 +8,14 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VertxFactory;
 import org.vertx.java.core.impl.ConcurrentHashSet;
+import org.vertx.java.spi.cluster.impl.hazelcast.ProgrammableClusterManagerFactory;
 
-import java.io.File;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.XmlConfigBuilder;
+
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -57,9 +56,6 @@ public class VertxPlatformFactory
    private ConcurrentHashSet<VertxHolder> vertxHolders = new ConcurrentHashSet<VertxHolder>();
    
    
-   private File currentCtxLoaderDir;
-   
-   
    private Lock lock = new ReentrantLock();
    
    private Lock holderLock = new ReentrantLock();
@@ -68,23 +64,6 @@ public class VertxPlatformFactory
     * Default private constructor
     */
    private VertxPlatformFactory(){
-      
-   }
-
-   /**
-    * @param currentCtxLoaderDir the currentCtxLoaderDir to set
-    */
-   public void setCurrentCtxLoaderDir(File currentCtxLoaderDir)
-   {
-      lock.lock();
-      try
-      {
-         this.currentCtxLoaderDir = currentCtxLoaderDir;
-      }
-      finally
-      {
-         lock.unlock();
-      }
       
    }
 
@@ -109,159 +88,81 @@ public class VertxPlatformFactory
       {
          Integer clusterPort = config.getClusterPort();
          String clusterHost = config.getClusterHost();
-         if (clusterHost == null || clusterHost.length() == 0)
-         {
-            log.log(Level.INFO, "Cluster Host is not set, use 'localhost' by default.");
-            clusterHost = "localhost";
-         }
-         if (clusterPort == null)
-         {
-            log.log(Level.INFO, "Cluster Port is not set, use 0 to random choose available port.");
-            clusterPort = Integer.valueOf(0);
-         }
          
          log.log(Level.INFO, "Starts a Vert.x platform at: " + config.getVertxPlatformIdentifier());
          
-         ClassLoader currentCtxLoader = SecurityActions.getContextClassLoader();
-         URLClassLoader clusterClassLoader = null;
-         
-         String clusterFile = config.getClusterConfigFile();
-         File tmpClusterFile = null;
-         if (clusterFile != null && clusterFile.length() > 0)
-         {
-            if (SecurityActions.isExpression(clusterFile))
-            {
-               clusterFile = SecurityActions.getExpressValue(clusterFile);
-            }
-            log.log(Level.INFO, "Using Cluster file: " + clusterFile);
-            
-            // make sure the tmp context loader directory is ready
-            if (currentCtxLoaderDir == null)
-            {
-               log.log(Level.FINEST, "Using system temporary directory.");
-               currentCtxLoaderDir = new File(SecurityActions.getSystemProperty("java.io.tmpdir"));
-            }
-            if (!currentCtxLoaderDir.exists())
-            {
-               log.log(Level.FINEST, currentCtxLoaderDir.getAbsolutePath() + " does not exist, create it.");
-               if (!currentCtxLoaderDir.mkdirs())
+         // either the default-cluster.xml in classpath, or the cluster xml file specified by config.getClusterConfigFile()
+         Config hazelcastCfg = loadHazelcastConfig(config);
+         ProgrammableClusterManagerFactory.setConfig(hazelcastCfg);
+
+         final CountDownLatch vertxStartCount = new CountDownLatch(1);
+         VertxFactory.newVertx(clusterPort, clusterHost, new Handler<AsyncResult<Vertx>>()
                {
-                  throw new IllegalStateException("Can't create the directory: " + currentCtxLoaderDir.getAbsolutePath());
-               }
-            }
-            else
-            {
-               if (!currentCtxLoaderDir.isDirectory())
-               {
-                  throw new IllegalArgumentException(currentCtxLoaderDir.getAbsoluteFile() + " is not a valid directory");
-               }
-               if (!currentCtxLoaderDir.canRead())
-               {
-                  throw new IllegalStateException("Can't read the directory: " + currentCtxLoaderDir.getAbsolutePath());
-               }
-            }
-            
-            try
-            {
-               tmpClusterFile = new File(currentCtxLoaderDir, "cluster.xml");
-               copyFile(new File(clusterFile), tmpClusterFile);
-               
-               URL clusterConfigDir = this.currentCtxLoaderDir.toURI().toURL();
-               clusterClassLoader = new URLClassLoader(new URL[]{clusterConfigDir}, currentCtxLoader);
-            }
-            catch (IOException e)
-            {
-               throw new IllegalArgumentException("Cluster configuration directory is not valid.", e);
-            }
-         }
-         
-         try
-         {
-            if (clusterFile != null && clusterFile.length() > 0)
-            {
-               SecurityActions.setCurrentContextClassLoader(clusterClassLoader);
-            }
-            final CountDownLatch vertxStartCount = new CountDownLatch(1);
-            VertxFactory.newVertx(clusterPort, clusterHost, new Handler<AsyncResult<Vertx>>()
+                  @Override
+                  public void handle(final AsyncResult<Vertx> result)
                   {
-                     @Override
-                     public void handle(final AsyncResult<Vertx> result)
+                     try
                      {
-                        try
+                        if (result.succeeded())
                         {
-                           if (result.succeeded())
-                           {
-                              log.log(Level.INFO, "Vert.x Platform at: " + config.getVertxPlatformIdentifier() + " Started Successfully.");
-                              vertxPlatforms.putIfAbsent(config.getVertxPlatformIdentifier(), result.result());
-                              lifecyleListener.whenReady(result.result());
-                           }
-                           else if (result.failed())
-                           {
-                              log.log(Level.SEVERE, "Failed to start Vert.x at: " + config.getVertxPlatformIdentifier());
-                              Throwable cause = result.cause();
-                              if (cause != null)
-                              {
-                                 throw new RuntimeException(cause);
-                              }
-                           }
+                           log.log(Level.INFO, "Vert.x Platform at: " + config.getVertxPlatformIdentifier() + " Started Successfully.");
+                           vertxPlatforms.putIfAbsent(config.getVertxPlatformIdentifier(), result.result());
+                           lifecyleListener.whenReady(result.result());
                         }
-                        finally
+                        else if (result.failed())
                         {
-                           vertxStartCount.countDown();
+                           log.log(Level.SEVERE, "Failed to start Vert.x at: " + config.getVertxPlatformIdentifier());
+                           Throwable cause = result.cause();
+                           if (cause != null)
+                           {
+                              throw new RuntimeException(cause);
+                           }
                         }
                      }
-                  });
-            vertxStartCount.await(); // waiting for the vertx starts up.
-         }
-         finally
-         {
-            lock.unlock();
-            if (clusterFile != null && clusterFile.length() > 0)
-            {
-               SecurityActions.setCurrentContextClassLoader(currentCtxLoader);
-               if (tmpClusterFile != null)
-               {
-                  try
-                  {
-                     tmpClusterFile.delete();
+                     finally
+                     {
+                        vertxStartCount.countDown();
+                     }
                   }
-                  catch (Exception delE)
-                  {
-                     log.log(Level.WARNING, "Can't remove the temporary cluster file: " + tmpClusterFile.getAbsolutePath(), delE);
-                  }
-               }
-            }
-         }
+               });
+         vertxStartCount.await(); // waiting for the vertx starts up.
       }
       catch(Exception exp)
       {
-         lock.unlock();
          throw new RuntimeException(exp);
-      }
-   }
-   
-   private void copyFile(File in, File out) throws IOException
-   {
-      InputStream input = new FileInputStream(in);
-      OutputStream output = new FileOutputStream(out);
-      byte[] buffer = new byte[4096];
-      int readLength;
-      try
-      {
-         while((readLength = input.read(buffer, 0, buffer.length)) != -1) 
-         {
-            output.write(buffer, 0, readLength);
-         }
-         output.flush();
       }
       finally
       {
-         input.close();
-         output.close();
+         lock.unlock();
       }
    }
 
-
+   private Config loadHazelcastConfig(VertxPlatformConfiguration config) throws IOException
+   {
+      String clusterConfigFile = config.getClusterConfigFile();
+      InputStream is = null;
+      try
+      {
+         if (clusterConfigFile != null && clusterConfigFile.length() > 0)
+         {
+            clusterConfigFile = SecurityActions.getExpressValue(clusterConfigFile);
+            is = new FileInputStream(clusterConfigFile);
+         }
+         else
+         {
+            // we only ship one default-cluster.xml
+            is = getClass().getClassLoader().getResourceAsStream("default-cluster.xml");
+         }
+         return new XmlConfigBuilder(is).build();
+      }
+      finally
+      {
+         if (is != null)
+         {
+            is.close();
+         }
+      }
+   }
 
    /**
     * Adds VertxHolder to be recorded.

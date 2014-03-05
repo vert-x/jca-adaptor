@@ -24,14 +24,12 @@ package org.vertx.java.resourceadapter;
 import org.vertx.java.resourceadapter.inflow.VertxActivation;
 import org.vertx.java.resourceadapter.inflow.VertxActivationSpec;
 
-import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.Connector;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
@@ -68,25 +66,6 @@ public class VertxResourceAdapter implements ResourceAdapter, java.io.Serializab
    private ConcurrentHashMap<VertxActivationSpec, VertxActivation> activations;
    
    private WorkManager workManager;
-   
-   @ConfigProperty
-   private String clusterTmpDir;
-   
-   /**
-    * @return the clusterTmpDir
-    */
-   public String getClusterTmpDir()
-   {
-      return clusterTmpDir;
-   }
-
-   /**
-    * @param clusterTmpDir the clusterTmpDir to set
-    */
-   public void setClusterTmpDir(String clusterTmpDir)
-   {
-      this.clusterTmpDir = clusterTmpDir;
-   }
 
    /**
     * Default constructor
@@ -142,16 +121,6 @@ public class VertxResourceAdapter implements ResourceAdapter, java.io.Serializab
    {
       log.finest("sets up configuration.");
       this.workManager = ctx.getWorkManager();
-      if (this.clusterTmpDir != null && this.clusterTmpDir.length() > 0)
-      {
-         String tmpDir = this.clusterTmpDir;
-         if (SecurityActions.isExpression(tmpDir))
-         {
-            tmpDir = SecurityActions.getExpressValue(tmpDir); 
-         }
-         File currentCtxLoaderDir = new File(tmpDir);
-         VertxPlatformFactory.instance().setCurrentCtxLoaderDir(currentCtxLoaderDir);
-      }
    }
    
    public WorkManager getWorkManager()

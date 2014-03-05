@@ -20,7 +20,7 @@ dependencies {
   provided "javax.validation:validation-api:$validationVersion"
   provided "org.jboss.ironjacamar:ironjacamar-spec-api:$ijVersion"
   compile "io.vertx:vertx-core:$vertxVersion"
-  runtime "io.vertx:vertx-hazelcast:$vertxVersion"
+  compile "io.vertx:vertx-hazelcast:$vertxVersion"
   testCompile "io.vertx:vertx-platform:$vertxVersion"
   testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded:$ijVersion"
   testCompile "org.jboss.ironjacamar:ironjacamar-arquillian-embedded-byteman:$ijVersion"

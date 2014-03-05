@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@SuppressWarnings("rawtypes")
 public class FakeClusterManager implements ClusterManager {
 
   private static Map<String, FakeClusterManager> nodes =
