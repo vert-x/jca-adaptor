@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.resource.NotSupportedException;
@@ -253,12 +254,12 @@ public class VertxManagedConnection implements ManagedConnection, VertxHolder
 
    EventBus getEventBus()
    {
-      return this.vertx.eventBus();
+      return new WrappedEventBus(vertx.eventBus());
    }
-   
 
    SharedData getSharedData()
    {
+      log.log(Level.INFO, "Only SharedData in local node is supported now!");
       return this.vertx.sharedData();
    }
 

@@ -101,8 +101,7 @@ public class ConnectorTestCase
       final EventBus eventBus = connectionFactory.getVertxConnection().eventBus();
       assertNotNull(eventBus);
       
-      EventBus bus2 = connectionFactory2.getVertxConnection().eventBus();
-      Assert.assertEquals(eventBus, bus2);
+      Assert.assertEquals(eventBus.getClass(), WrappedEventBus.class);
       
       VertxPlatformConfiguration config = new VertxPlatformConfiguration();
       config.setClusterHost("localhost");
@@ -144,6 +143,7 @@ public class ConnectorTestCase
       {
          Thread.sleep(1000);
       }
+      
       Assert.assertTrue(this.testGetConnectionCompleted);
       testCompleted();
    }
