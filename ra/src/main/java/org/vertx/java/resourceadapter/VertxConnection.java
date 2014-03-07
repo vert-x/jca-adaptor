@@ -36,6 +36,9 @@ public interface VertxConnection
    /** 
     * Get Vert.x distributed EventBus from the Vert.x platform.
     *
+    * <p>
+    * <b>NOTE: eventBus().close() method does nothing, it is managed by resource adapter.
+    * 
     * @return EventBus instance
     * @exception ResourceException Thrown if a connection can't be obtained
     */
@@ -43,6 +46,8 @@ public interface VertxConnection
    
    /**
     * Gets shared data from Vert.x platform.
+    * <p>
+    * <b>NOTE: Only SharedData in local node is supported now!</b>
     * 
     * @return the SharedData
     * @throws ResourceException Thrown if can't get the shared data
@@ -54,7 +59,7 @@ public interface VertxConnection
     * 
     * The close action does nothing about the underline Vert.x platform.
     * 
-    * After this method call, next eventBus() and getSharedData() will return null. 
+    * After this method call, next eventBus() and getSharedData() will throw ResourceException. 
     * 
     * @throws ResourceException Thrown if the connection failed close.
     */
