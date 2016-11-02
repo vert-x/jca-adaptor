@@ -1,5 +1,6 @@
-JCA Resource Adaptor for Vert.x
-======================
+# Vert.x 2.x is **deprecated** - use instead http://vertx.io
+
+## JCA Resource Adaptor for Vert.x
 
 JCA Adaptor for Vertx to interaction between JavaEE application server and Vertx cluster.
 
